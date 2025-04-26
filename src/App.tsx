@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import Projects from "./pages/Projects";
 import Tasks from "./pages/Tasks";
 import Materials from "./pages/Materials";
+import Clients from "./pages/Clients";
 import MainLayout from "./layouts/MainLayout";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,14 @@ const App = () => (
             element={
               <MainLayout>
                 <Materials />
+              </MainLayout>
+            } 
+          />
+          <Route 
+            path="/clients" 
+            element={
+              <MainLayout>
+                <Clients />
               </MainLayout>
             } 
           />
