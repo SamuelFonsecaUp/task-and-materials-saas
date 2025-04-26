@@ -14,35 +14,39 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 262 86% 74%;
+    /* Alterado de roxo para vermelho */
+    --primary: 0 84% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 269 33% 54%;
+    /* Alterado de roxo para vermelho mais escuro */
+    --secondary: 0 73% 42%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 270 36% 95%;
-    --accent-foreground: 262 86% 64%;
+    /* Alterado para tons de vermelho mais claros */
+    --accent: 0 100% 97%;
+    --accent-foreground: 0 84% 50%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 262 86% 74%;
+    --ring: 0 84% 60%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 270 36% 95%;
+    /* Sidebar colors - atualizado para tons de vermelho */
+    --sidebar-background: 0 100% 97%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 262 86% 74%;
+    --sidebar-primary: 0 84% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 263 59% 88%;
-    --sidebar-ring: 262 86% 74%;
+    --sidebar-border: 0 59% 88%;
+    --sidebar-ring: 0 84% 60%;
   }
 
   .dark {
@@ -55,16 +59,19 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 262 86% 74%;
+    /* Alterado para vermelho mais vibrante no modo escuro */
+    --primary: 0 84% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 269 33% 54%;
+    /* Vermelho mais escuro para secondary no modo escuro */
+    --secondary: 0 73% 42%;
     --secondary-foreground: 0 0% 98%;
 
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 270 36% 25%;
+    /* Alterado para tons de vermelho mais escuros */
+    --accent: 0 60% 20%;
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62.8% 30.6%;
@@ -72,16 +79,17 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 262 86% 74%;
+    --ring: 0 84% 60%;
     
+    /* Sidebar colors no modo escuro - atualizado para tons de vermelho */
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 262 86% 74%;
+    --sidebar-primary: 0 84% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 262 86% 74%;
+    --sidebar-ring: 0 84% 60%;
   }
 }
 

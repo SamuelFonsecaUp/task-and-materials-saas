@@ -1,16 +1,18 @@
 
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogOverlay } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar, Clock, MessageSquare, Send } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Task } from "./TaskTable";
 
 // Interface para as props do componente TaskDetailModal
 interface TaskDetailModalProps {
-  task: any;
+  task: Task;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -19,68 +21,108 @@ interface TaskDetailModalProps {
 const TaskDetailModal = ({ task, isOpen, onClose }: TaskDetailModalProps) => {
   const [commentText, setCommentText] = useState("");
   const [activeTab, setActiveTab] = useState("details");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSendingComment, setIsSendingComment] = useState(false);
   
-  // Mock de dados para comentários
-  const [comments, setComments] = useState([
-    {
-      id: 1,
-      text: "Já comecei a trabalhar nesta tarefa, devo finalizar até amanhã.",
-      user: {
-        name: "João Costa",
-        avatar: "https://i.pravatar.cc/150?img=2"
-      },
-      timestamp: "Hoje, 14:30"
-    },
-    {
-      id: 2,
-      text: "Ótimo! Estou aguardando para revisão.",
-      user: {
-        name: "Ana Silva",
-        avatar: "https://i.pravatar.cc/150?img=1"
-      },
-      timestamp: "Hoje, 15:15"
-    }
-  ]);
+  // Estado local para gerenciar comentários
+  const [comments, setComments] = useState<{
+    id: number;
+    text: string;
+    user: {
+      name: string;
+      avatar: string;
+    };
+    timestamp: string;
+  }[]>([]);
 
   // Mock de dados para o log de alterações
-  const activityLog = [
-    {
-      id: 1,
-      action: "Tarefa criada",
-      user: "Maria Souza",
-      timestamp: "01/05/2025, 09:45"
-    },
-    {
-      id: 2,
-      action: "Status alterado para 'Em Andamento'",
-      user: "João Costa",
-      timestamp: "03/05/2025, 10:30"
-    },
-    {
-      id: 3,
-      action: "Prazo alterado de 08/05/2025 para 10/05/2025",
-      user: "Ana Silva",
-      timestamp: "04/05/2025, 16:20"
+  const [activityLog, setActivityLog] = useState<{
+    id: number;
+    action: string;
+    user: string;
+    timestamp: string;
+  }[]>([]);
+
+  // Efeito para carregar comentários e log quando o modal é aberto
+  useEffect(() => {
+    if (isOpen && task) {
+      setIsLoading(true);
+      
+      // Simulando uma chamada de API para obter comentários
+      setTimeout(() => {
+        const mockComments = [
+          {
+            id: 1,
+            text: "Já comecei a trabalhar nesta tarefa, devo finalizar até amanhã.",
+            user: {
+              name: "João Costa",
+              avatar: "https://i.pravatar.cc/150?img=2"
+            },
+            timestamp: "Hoje, 14:30"
+          },
+          {
+            id: 2,
+            text: "Ótimo! Estou aguardando para revisão.",
+            user: {
+              name: "Ana Silva",
+              avatar: "https://i.pravatar.cc/150?img=1"
+            },
+            timestamp: "Hoje, 15:15"
+          }
+        ];
+        
+        const mockActivityLog = [
+          {
+            id: 1,
+            action: "Tarefa criada",
+            user: "Maria Souza",
+            timestamp: "01/05/2025, 09:45"
+          },
+          {
+            id: 2,
+            action: "Status alterado para 'Em Andamento'",
+            user: "João Costa",
+            timestamp: "03/05/2025, 10:30"
+          },
+          {
+            id: 3,
+            action: "Prazo alterado de 08/05/2025 para 10/05/2025",
+            user: "Ana Silva",
+            timestamp: "04/05/2025, 16:20"
+          }
+        ];
+        
+        setComments(mockComments);
+        setActivityLog(mockActivityLog);
+        setIsLoading(false);
+      }, 1000);
     }
-  ];
+  }, [isOpen, task]);
 
   // Função para enviar comentário
   const handleSendComment = () => {
     if (commentText.trim()) {
-      const newComment = {
-        id: comments.length + 1,
-        text: commentText,
-        user: {
-          name: "Admin User",
-          avatar: "https://i.pravatar.cc/150?img=68"
-        },
-        timestamp: "Agora"
-      };
-      setComments([...comments, newComment]);
-      setCommentText("");
+      setIsSendingComment(true);
       
-      // Aqui seria feita a chamada para a API: POST /api/tasks/{id}/comments
-      console.log("Enviando comentário para API:", { taskId: task.id, text: commentText });
+      // Simulando uma chamada de API para enviar comentário
+      setTimeout(() => {
+        const newComment = {
+          id: comments.length + 1,
+          text: commentText,
+          user: {
+            name: "Admin User",
+            avatar: "https://i.pravatar.cc/150?img=68"
+          },
+          timestamp: "Agora"
+        };
+        
+        setComments([...comments, newComment]);
+        setCommentText("");
+        setIsSendingComment(false);
+        
+        // Aqui seria feita a chamada para a API: POST /api/tasks/{id}/comments
+        console.log("Enviando comentário para API:", { taskId: task.id, text: commentText });
+      }, 500);
     }
   };
 
@@ -95,7 +137,7 @@ const TaskDetailModal = ({ task, isOpen, onClose }: TaskDetailModalProps) => {
   };
 
   // Renderização do status com cores diferentes
-  const renderStatus = (status: string) => {
+  const renderStatus = (status: 'pending' | 'in-progress' | 'completed') => {
     switch (status) {
       case 'pending':
         return <Badge className="bg-warning/20 text-warning border-warning/20">Pendente</Badge>;
@@ -109,7 +151,7 @@ const TaskDetailModal = ({ task, isOpen, onClose }: TaskDetailModalProps) => {
   };
 
   // Renderização da prioridade com cores diferentes
-  const renderPriority = (priority: string) => {
+  const renderPriority = (priority: 'low' | 'medium' | 'high' | 'urgent') => {
     switch (priority) {
       case 'low':
         return <Badge className="bg-success/20 text-success border-success/20">Baixa</Badge>;
@@ -126,6 +168,7 @@ const TaskDetailModal = ({ task, isOpen, onClose }: TaskDetailModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogOverlay className="bg-black/50" /> {/* Overlay escuro para bloquear o background */}
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-between">
@@ -150,6 +193,7 @@ const TaskDetailModal = ({ task, isOpen, onClose }: TaskDetailModalProps) => {
                   src={task.companyLogo} 
                   alt={task.companyName}
                   className="h-full w-full object-cover"
+                  loading="lazy" // Lazy loading para imagem
                 />
               </div>
               <div>
@@ -164,7 +208,7 @@ const TaskDetailModal = ({ task, isOpen, onClose }: TaskDetailModalProps) => {
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-muted-foreground">Data de Criação:</span>
-                  <span>{task.createdAt}</span>
+                  <span>{task.createdAt || "N/A"}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Clock className="h-4 w-4 text-muted-foreground" />
@@ -185,6 +229,7 @@ const TaskDetailModal = ({ task, isOpen, onClose }: TaskDetailModalProps) => {
                       <AvatarImage 
                         src={task.assignedTo.avatar} 
                         alt={task.assignedTo.name}
+                        loading="lazy"
                       />
                     ) : null}
                     <AvatarFallback>
@@ -199,7 +244,7 @@ const TaskDetailModal = ({ task, isOpen, onClose }: TaskDetailModalProps) => {
             {/* Descrição da tarefa */}
             <div>
               <h4 className="text-sm font-medium mb-2">Descrição</h4>
-              <p className="text-sm">{task.description}</p>
+              <p className="text-sm">{task.description || "Sem descrição disponível."}</p>
             </div>
             
             {/* Checklist (se disponível) */}
@@ -207,7 +252,7 @@ const TaskDetailModal = ({ task, isOpen, onClose }: TaskDetailModalProps) => {
               <div>
                 <h4 className="text-sm font-medium mb-2">Checklist</h4>
                 <ul className="space-y-2">
-                  {task.checklist.map((item: any) => (
+                  {task.checklist.map((item) => (
                     <li key={item.id} className="flex items-center gap-2">
                       <input 
                         type="checkbox" 
@@ -227,70 +272,110 @@ const TaskDetailModal = ({ task, isOpen, onClose }: TaskDetailModalProps) => {
           
           {/* Tab de Comentários */}
           <TabsContent value="comments" className="space-y-4">
-            {/* Lista de comentários */}
-            <div className="space-y-4">
-              {comments.map((comment) => (
-                <div key={comment.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={comment.user.avatar} alt={comment.user.name} />
-                    <AvatarFallback>{getInitials(comment.user.name)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-center">
-                      <p className="font-medium">{comment.user.name}</p>
-                      <span className="text-xs text-muted-foreground">{comment.timestamp}</span>
+            {/* Estado de carregamento para comentários */}
+            {isLoading ? (
+              <div className="space-y-4">
+                {[...Array(2)].map((_, index) => (
+                  <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-3 w-12" />
+                      </div>
+                      <Skeleton className="h-12 w-full mt-2" />
                     </div>
-                    <p className="text-sm mt-1">{comment.text}</p>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            ) : (
+              <>
+                {/* Lista de comentários */}
+                <div className="space-y-4">
+                  {comments.map((comment) => (
+                    <div key={comment.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage 
+                          src={comment.user.avatar} 
+                          alt={comment.user.name} 
+                          loading="lazy"
+                        />
+                        <AvatarFallback>{getInitials(comment.user.name)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-center">
+                          <p className="font-medium">{comment.user.name}</p>
+                          <span className="text-xs text-muted-foreground">{comment.timestamp}</span>
+                        </div>
+                        <p className="text-sm mt-1">{comment.text}</p>
+                      </div>
+                    </div>
+                  ))}
 
-              {comments.length === 0 && (
-                <div className="text-center py-6 text-muted-foreground">
-                  <MessageSquare className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                  <p>Nenhum comentário ainda.</p>
+                  {comments.length === 0 && (
+                    <div className="text-center py-6 text-muted-foreground">
+                      <MessageSquare className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                      <p>Nenhum comentário ainda.</p>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            
-            {/* Formulário para novo comentário */}
-            <div className="flex items-center gap-2 mt-4">
-              <Textarea
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder="Escreva um comentário..."
-                className="resize-none"
-                rows={3}
-              />
-            </div>
-            <Button 
-              onClick={handleSendComment}
-              disabled={!commentText.trim()} 
-              className="w-full"
-            >
-              <Send className="h-4 w-4 mr-2" /> Enviar Comentário
-            </Button>
+                
+                {/* Formulário para novo comentário */}
+                <div className="flex items-center gap-2 mt-4">
+                  <Textarea
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    placeholder="Escreva um comentário..."
+                    className="resize-none"
+                    rows={3}
+                    disabled={isSendingComment}
+                  />
+                </div>
+                <Button 
+                  onClick={handleSendComment}
+                  disabled={!commentText.trim() || isSendingComment} 
+                  className="w-full"
+                >
+                  <Send className={`h-4 w-4 mr-2 ${isSendingComment ? 'animate-pulse' : ''}`} />
+                  {isSendingComment ? 'Enviando...' : 'Enviar Comentário'}
+                </Button>
+              </>
+            )}
           </TabsContent>
           
           {/* Tab de Log de Alterações */}
           <TabsContent value="log" className="space-y-4">
-            <div className="space-y-2">
-              {activityLog.map((log) => (
-                <div key={log.id} className="flex items-center justify-between py-3 border-b last:border-0">
-                  <div>
-                    <p className="font-medium">{log.action}</p>
-                    <p className="text-sm text-muted-foreground">por {log.user}</p>
+            {isLoading ? (
+              <div className="space-y-4">
+                {[...Array(3)].map((_, index) => (
+                  <div key={index} className="flex items-center justify-between py-3 border-b">
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-48" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                    <Skeleton className="h-3 w-32" />
                   </div>
-                  <span className="text-xs text-muted-foreground">{log.timestamp}</span>
-                </div>
-              ))}
-              
-              {activityLog.length === 0 && (
-                <div className="text-center py-6 text-muted-foreground">
-                  <p>Nenhuma alteração registrada.</p>
-                </div>
-              )}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {activityLog.map((log) => (
+                  <div key={log.id} className="flex items-center justify-between py-3 border-b last:border-0">
+                    <div>
+                      <p className="font-medium">{log.action}</p>
+                      <p className="text-sm text-muted-foreground">por {log.user}</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{log.timestamp}</span>
+                  </div>
+                ))}
+                
+                {activityLog.length === 0 && (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <p>Nenhuma alteração registrada.</p>
+                  </div>
+                )}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </DialogContent>

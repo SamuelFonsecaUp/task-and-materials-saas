@@ -1,33 +1,53 @@
 
 import { useState, useRef } from "react";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/App";
-import { Upload, X } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
+import { Loader2 } from "lucide-react";
 
+/**
+ * Página de Perfil do Usuário
+ * 
+ * Permite ao usuário visualizar e editar informações do perfil,
+ * incluindo dados pessoais, senha e foto de perfil.
+ */
 const Profile = () => {
+  // Obtém dados do usuário do contexto de autenticação
   const { user } = useAuth();
-  const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Estado para o preview da imagem
+  // Estados para os formulários
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  
+  // Estados para dados do perfil
+  const [name, setName] = useState(user?.name || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [phone, setPhone] = useState("");
+  const [activeTab, setActiveTab] = useState("personal");
+  
+  // Estados para o formulário de senha
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  
+  // Estado para preview da imagem
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
   
-  // Função para obter as iniciais do nome para o fallback do avatar
-  const getInitials = (name: string) => {
-    if (!name) return "?";
+  // Referência para o input de arquivo
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  /**
+   * Obtém as iniciais do nome para o fallback do avatar
+   */
+  const getInitials = (name?: string) => {
+    if (!name) return "U";
     return name
       .split(' ')
       .map(part => part[0])
@@ -36,194 +56,396 @@ const Profile = () => {
       .substring(0, 2);
   };
 
-  // Função para abrir o seletor de arquivo ao clicar no botão
-  const handleUploadClick = () => {
+  /**
+   * Manipula o envio do formulário de dados pessoais
+   * @param e - Evento de formulário
+   */
+  const handleProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsUpdatingProfile(true);
+    
+    try {
+      // Simulação de chamada de API
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Em um app real, aqui você enviaria os dados para o backend
+      // PUT /api/users/{id}/profile
+      console.log("Salvando dados do perfil:", { name, email, phone });
+      
+      toast({
+        title: "Perfil atualizado",
+        description: "Seus dados foram atualizados com sucesso.",
+      });
+    } catch (error) {
+      console.error("Erro ao atualizar perfil:", error);
+      toast({
+        title: "Erro ao atualizar perfil",
+        description: "Ocorreu um erro. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
+
+  /**
+   * Manipula o envio do formulário de troca de senha
+   * @param e - Evento de formulário
+   */
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validações básicas
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Senhas não conferem",
+        description: "A nova senha e a confirmação devem ser iguais.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      toast({
+        title: "Senha muito curta",
+        description: "A senha deve ter pelo menos 6 caracteres.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsChangingPassword(true);
+    
+    try {
+      // Simulação de chamada de API
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Em um app real, aqui você enviaria os dados para o backend
+      // PUT /api/users/{id}/password
+      console.log("Alterando senha");
+      
+      // Limpar formulário
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      
+      toast({
+        title: "Senha alterada",
+        description: "Sua senha foi alterada com sucesso.",
+      });
+    } catch (error) {
+      console.error("Erro ao alterar senha:", error);
+      toast({
+        title: "Erro ao alterar senha",
+        description: "Senha atual incorreta ou erro de conexão.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  /**
+   * Manipula o clique no botão de upload de avatar
+   */
+  const handleAvatarButtonClick = () => {
     fileInputRef.current?.click();
   };
 
-  // Função para cancelar o upload
-  const handleCancelUpload = () => {
-    setAvatarPreview(null);
-    setSelectedFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  // Função para lidar com a seleção de arquivo
+  /**
+   * Manipula a seleção de arquivo para avatar
+   * @param e - Evento de input de arquivo
+   */
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Validar o tipo de arquivo
-    if (!file.type.match('image/jpeg') && !file.type.match('image/png')) {
+    
+    // Validar tipo de arquivo
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
       toast({
-        title: "Formato inválido",
-        description: "Por favor, selecione uma imagem JPEG ou PNG.",
-        variant: "destructive"
+        title: "Tipo de arquivo inválido",
+        description: "Por favor, selecione uma imagem JPG ou PNG.",
+        variant: "destructive",
       });
       return;
     }
-
-    // Validar o tamanho do arquivo (5MB = 5 * 1024 * 1024 bytes)
-    if (file.size > 5 * 1024 * 1024) {
+    
+    // Validar tamanho (5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
       toast({
         title: "Arquivo muito grande",
-        description: "Por favor, selecione uma imagem com menos de 5MB.",
-        variant: "destructive"
+        description: "O tamanho máximo permitido é 5MB.",
+        variant: "destructive",
       });
       return;
     }
-
-    // Criar URL para preview da imagem
-    const previewUrl = URL.createObjectURL(file);
-    setAvatarPreview(previewUrl);
+    
+    // Criar URL para preview
+    const objectUrl = URL.createObjectURL(file);
+    setAvatarPreview(objectUrl);
     setSelectedFile(file);
+    
+    // Limpar o input de arquivo para permitir a seleção do mesmo arquivo novamente
+    e.target.value = '';
   };
 
-  // Função para salvar a imagem
-  const handleSaveAvatar = async () => {
+  /**
+   * Manipula o upload do avatar
+   */
+  const handleAvatarUpload = async () => {
     if (!selectedFile) return;
     
-    setIsUploading(true);
+    setIsUploadingAvatar(true);
     
     try {
-      // Simular upload para API
-      // Em um app real, aqui seria feita uma chamada para a API PUT /api/users/{id}/avatar
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulando delay de rede
+      // Simulação de upload de arquivo
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Em um app real, aqui você enviaria o arquivo para o backend
+      // PUT /api/users/{id}/avatar
+      console.log("Enviando avatar:", selectedFile.name);
       
       toast({
-        title: "Foto de perfil atualizada",
-        description: "Sua foto de perfil foi atualizada com sucesso.",
+        title: "Avatar atualizado",
+        description: "Sua foto de perfil foi alterada com sucesso.",
       });
-      
-      // Limpar estados
-      setSelectedFile(null);
-      
-      // Em um app real, aqui atualizaríamos o estado do usuário com a nova URL do avatar
     } catch (error) {
+      console.error("Erro ao fazer upload do avatar:", error);
       toast({
-        title: "Erro ao atualizar foto",
-        description: "Ocorreu um erro ao tentar atualizar sua foto de perfil.",
-        variant: "destructive"
+        title: "Erro ao atualizar avatar",
+        description: "Ocorreu um erro. Tente novamente.",
+        variant: "destructive",
       });
     } finally {
-      setIsUploading(false);
+      setIsUploadingAvatar(false);
     }
+  };
+
+  /**
+   * Cancela o upload e limpa o preview
+   */
+  const handleCancelUpload = () => {
+    setAvatarPreview(null);
+    setSelectedFile(null);
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-bold">Perfil</h1>
-        <p className="text-muted-foreground">Gerencie suas informações pessoais</p>
-      </div>
-
-      <div className="grid gap-6">
-        {/* Card de foto de perfil */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Foto de Perfil</CardTitle>
-            <CardDescription>
-              Atualize sua foto de perfil. Recomendamos uma imagem de rosto.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              {/* Preview de avatar atual ou novo */}
-              <div className="flex flex-col items-center">
-                <Avatar className="h-32 w-32">
-                  <AvatarImage 
-                    src={avatarPreview || user?.avatar} 
-                    alt={user?.name || "Usuário"} 
-                  />
-                  <AvatarFallback className="text-3xl">
-                    {user?.name ? getInitials(user.name) : "?"}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-
-              <div className="flex flex-col gap-4 flex-1">
-                {/* Input de arquivo oculto */}
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  accept="image/jpeg, image/png"
-                  className="hidden"
-                />
-
-                {/* Instruções e botões */}
-                <div className="text-sm text-muted-foreground">
-                  <p>Formatos aceitos: JPG, PNG</p>
-                  <p>Tamanho máximo: 5MB</p>
-                </div>
-
-                <div className="flex flex-wrap gap-3">
-                  {!avatarPreview ? (
-                    <Button 
-                      type="button" 
-                      variant="outline"
-                      onClick={handleUploadClick}
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      Selecionar Imagem
-                    </Button>
+    <div className="container mx-auto py-8 animate-fade-in">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold mb-2">Meu Perfil</h1>
+        <p className="text-muted-foreground mb-8">Gerencie suas informações pessoais e preferências</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Coluna da esquerda - Avatar e informações básicas */}
+          <div className="md:col-span-1">
+            <Card>
+              <CardHeader>
+                <CardTitle>Foto de Perfil</CardTitle>
+                <CardDescription>Personalize sua imagem de perfil</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center">
+                <Avatar className="h-32 w-32 mb-4">
+                  {avatarPreview ? (
+                    <AvatarImage src={avatarPreview} alt={user?.name || "Avatar"} />
                   ) : (
                     <>
-                      <Button 
-                        type="button" 
-                        variant="default"
-                        onClick={handleSaveAvatar}
-                        disabled={isUploading}
-                      >
-                        {isUploading ? "Salvando..." : "Salvar"}
-                      </Button>
-                      <Button 
-                        type="button" 
-                        variant="outline"
-                        onClick={handleCancelUpload}
-                        disabled={isUploading}
-                      >
-                        <X className="h-4 w-4 mr-2" />
-                        Cancelar
-                      </Button>
+                      <AvatarImage src={user?.avatar} alt={user?.name || "Avatar"} />
+                      <AvatarFallback className="text-2xl">{getInitials(user?.name)}</AvatarFallback>
                     </>
                   )}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Card de informações pessoais */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Informações Pessoais</CardTitle>
-            <CardDescription>
-              Atualize suas informações pessoais
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nome</Label>
-                  <Input id="name" defaultValue={user?.name} />
-                </div>
+                </Avatar>
                 
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png, image/jpeg"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+                
+                {/* Botões de upload */}
+                {avatarPreview ? (
+                  <div className="flex gap-2 mt-2 w-full">
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={handleCancelUpload}
+                      disabled={isUploadingAvatar}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      className="flex-1"
+                      onClick={handleAvatarUpload}
+                      disabled={isUploadingAvatar}
+                    >
+                      {isUploadingAvatar ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Enviando...
+                        </>
+                      ) : "Salvar"}
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="mt-2 w-full"
+                    onClick={handleAvatarButtonClick}
+                  >
+                    Alterar Foto
+                  </Button>
+                )}
+              </CardContent>
+              <CardFooter className="flex flex-col items-start">
+                <p className="text-sm text-muted-foreground text-center w-full">
+                  JPG ou PNG. Máximo 5MB.
+                </p>
+              </CardFooter>
+            </Card>
+            
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>Informações da Conta</CardTitle>
+              </CardHeader>
+              <CardContent>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" defaultValue={user?.email} />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Tipo de Conta</p>
+                    <p className="font-medium">
+                      {user?.role === 'admin' ? 'Administrador' : 
+                       user?.role === 'collaborator' ? 'Colaborador' : 'Cliente'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">E-mail</p>
+                    <p className="font-medium">{user?.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Membro desde</p>
+                    <p className="font-medium">Janeiro de 2025</p>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="flex justify-end">
-                <Button>Salvar Alterações</Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Coluna da direita - Abas de configurações */}
+          <div className="md:col-span-2">
+            <Card>
+              <CardHeader className="pb-2">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="grid grid-cols-2 w-full">
+                    <TabsTrigger value="personal">Dados Pessoais</TabsTrigger>
+                    <TabsTrigger value="security">Segurança</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </CardHeader>
+              <CardContent>
+                <TabsContent value="personal">
+                  <form onSubmit={handleProfileSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Nome Completo</Label>
+                      <Input 
+                        id="name" 
+                        value={name} 
+                        onChange={(e) => setName(e.target.value)} 
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">E-mail</Label>
+                      <Input 
+                        id="email" 
+                        type="email" 
+                        value={email} 
+                        onChange={(e) => setEmail(e.target.value)} 
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Telefone</Label>
+                      <Input 
+                        id="phone" 
+                        value={phone} 
+                        onChange={(e) => setPhone(e.target.value)} 
+                        placeholder="(00) 00000-0000"
+                      />
+                    </div>
+                    <Button 
+                      type="submit" 
+                      disabled={isUpdatingProfile}
+                      className="w-full"
+                    >
+                      {isUpdatingProfile ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Salvando...
+                        </>
+                      ) : "Salvar Alterações"}
+                    </Button>
+                  </form>
+                </TabsContent>
+                <TabsContent value="security">
+                  <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="current-password">Senha Atual</Label>
+                      <Input 
+                        id="current-password" 
+                        type="password" 
+                        value={currentPassword} 
+                        onChange={(e) => setCurrentPassword(e.target.value)} 
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="new-password">Nova Senha</Label>
+                      <Input 
+                        id="new-password" 
+                        type="password" 
+                        value={newPassword} 
+                        onChange={(e) => setNewPassword(e.target.value)} 
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirm-password">Confirmar Nova Senha</Label>
+                      <Input 
+                        id="confirm-password" 
+                        type="password" 
+                        value={confirmPassword} 
+                        onChange={(e) => setConfirmPassword(e.target.value)} 
+                        required
+                      />
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      <p>A senha deve conter:</p>
+                      <ul className="list-disc pl-5">
+                        <li>Pelo menos 6 caracteres</li>
+                        <li>Letras maiúsculas e minúsculas</li>
+                        <li>Pelo menos um número</li>
+                      </ul>
+                    </div>
+                    <Button 
+                      type="submit" 
+                      disabled={isChangingPassword}
+                      className="w-full"
+                    >
+                      {isChangingPassword ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Alterando...
+                        </>
+                      ) : "Alterar Senha"}
+                    </Button>
+                  </form>
+                </TabsContent>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -64,11 +64,11 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				agency: {
-					primary: '#9b87f5',
-					secondary: '#7E69AB',
-					tertiary: '#6E59A5',
+					primary: '#E53E3E',    // Alterado de roxo para vermelho
+					secondary: '#C53030',  // Vermelho mais escuro para secondary
+					tertiary: '#9B2C2C',   // Vermelho ainda mais escuro para tertiary
 					dark: '#1A1F2C',
-					light: '#D6BCFA',
+					light: '#FED7D7',      // Vermelho claro
 					"gray-100": '#F8F9FA',
 					"gray-200": '#E9ECEF',
 					"gray-300": '#DEE2E6',

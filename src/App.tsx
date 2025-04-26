@@ -3,7 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { createContext, useContext, useState, useEffect } from "react";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -16,23 +17,27 @@ import Settings from "./pages/Settings";
 import MainLayout from "./layouts/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import CrmProspects from "./pages/CrmProspects";
-import { createContext, useContext, useState } from "react";
+import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
 
 // Tipo para os papéis de usuário
 type UserRole = "client" | "collaborator" | "admin";
 
+// Interface para o usuário autenticado
+interface AuthUser {
+  id: number;
+  name: string;
+  email: string;
+  role: UserRole;
+  avatar?: string;
+}
+
 // Interface para o contexto de autenticação
 interface AuthContextType {
-  user: {
-    id: number;
-    name: string;
-    email: string;
-    role: UserRole;
-    avatar?: string;
-  } | null;
+  user: AuthUser | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
@@ -49,7 +54,120 @@ export const useAuth = () => {
   return context;
 };
 
-// Componente para proteger rotas baseado no papel do usuário
+/**
+ * Provedor de Autenticação
+ * 
+ * Gerencia o estado de autenticação do usuário e fornece funções de login/logout
+ */
+const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Verificar se há um token salvo ao carregar o aplicativo
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('authToken');
+      
+      if (token) {
+        try {
+          // Em um app real, verificaria o token com o backend
+          // Aqui estamos apenas simulando essa verificação
+          const mockUser = {
+            id: 1,
+            name: "Admin User",
+            email: "admin@example.com",
+            role: "admin" as UserRole,
+            avatar: "https://i.pravatar.cc/150?img=68"
+          };
+          
+          setUser(mockUser);
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error("Erro ao verificar token:", error);
+          localStorage.removeItem('authToken');
+        }
+      }
+      
+      setIsLoading(false);
+    };
+    
+    checkAuth();
+  }, []);
+
+  /**
+   * Função de login
+   * @param email - Email do usuário
+   * @param password - Senha do usuário
+   */
+  const login = async (email: string, password: string) => {
+    setIsLoading(true);
+    
+    try {
+      // Simulação de uma chamada de API
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      let role: UserRole = "client";
+      let name = "Usuário Cliente";
+      
+      // Determinar o papel com base no email (apenas para simulação)
+      if (email.includes("admin")) {
+        role = "admin";
+        name = "Admin User";
+      } else if (email.includes("colab")) {
+        role = "collaborator";
+        name = "Colaborador";
+      }
+      
+      const mockUser = {
+        id: 1,
+        name,
+        email,
+        role,
+        avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70) + 1}`
+      };
+      
+      // Em um app real, aqui você receberia um JWT do backend
+      const mockToken = "mock-jwt-token";
+      localStorage.setItem('authToken', mockToken);
+      
+      setUser(mockUser);
+      setIsAuthenticated(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Função de logout
+   */
+  const logout = () => {
+    // Em um app real, aqui você poderia fazer uma chamada para invalidar o token no servidor
+    localStorage.removeItem('authToken');
+    setUser(null);
+    setIsAuthenticated(false);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+/**
+ * Componente de tela de carregamento
+ */
+const LoadingScreen = () => (
+  <div className="min-h-screen flex flex-col items-center justify-center">
+    <Loader2 className="h-16 w-16 animate-spin text-primary mb-4" />
+    <p className="text-lg font-medium">Carregando...</p>
+  </div>
+);
+
+/**
+ * Componente para proteger rotas baseado no papel do usuário
+ */
 const ProtectedRoute = ({ 
   element, 
   allowedRoles, 
@@ -59,60 +177,42 @@ const ProtectedRoute = ({
   allowedRoles: UserRole[]; 
   redirectTo?: string;
 }) => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
 
-  if (!isAuthenticated) {
-    return <Navigate to={redirectTo} replace />;
+  // Exibe tela de carregamento enquanto verifica autenticação
+  if (isLoading) {
+    return <LoadingScreen />;
   }
 
+  // Redireciona para login se não estiver autenticado
+  if (!isAuthenticated) {
+    return <Navigate to={redirectTo} state={{ from: location }} replace />;
+  }
+
+  // Verifica se o usuário tem permissão para acessar a rota
   if (user && !allowedRoles.includes(user.role)) {
     // Redireciona para dashboard por padrão se o usuário não tem permissão
     return <Navigate to="/dashboard" replace />;
   }
 
+  // Permite acesso se passar por todas as verificações
   return <>{element}</>;
 };
 
+/**
+ * Componente principal da aplicação
+ */
 const App = () => {
-  // Mock de usuário autenticado - em um app real, isso viria de uma API ou contexto de autenticação
-  const [currentUser, setCurrentUser] = useState({
-    id: 1,
-    name: "Admin User",
-    email: "admin@example.com",
-    role: "admin" as UserRole,
-    avatar: "https://i.pravatar.cc/150?img=68"
-  });
-
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-
-  // Funções mock de login e logout
-  const login = async (email: string, password: string) => {
-    // Simular uma chamada de API
-    console.log("Login com:", email, password);
-    setIsAuthenticated(true);
-    // Em um app real, aqui seria feita a autenticação com backend
-  };
-
-  const logout = () => {
-    setIsAuthenticated(false);
-  };
-
-  // Valor do contexto de autenticação
-  const authContextValue: AuthContextType = {
-    user: isAuthenticated ? currentUser : null,
-    isAuthenticated,
-    login,
-    logout
-  };
-
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthContext.Provider value={authContextValue}>
+      <AuthProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
             <Routes>
+              {/* Rota de login - acessível para todos */}
               <Route path="/login" element={<Login />} />
               
               {/* Rotas protegidas por papel */}
@@ -237,21 +337,6 @@ const App = () => {
                 } 
               />
               
-              {/* Calendário - Acessível para colaboradores e admins */}
-              <Route 
-                path="/calendar" 
-                element={
-                  <ProtectedRoute 
-                    element={
-                      <MainLayout>
-                        <NotFound />
-                      </MainLayout>
-                    } 
-                    allowedRoles={["collaborator", "admin"]} 
-                  />
-                } 
-              />
-              
               {/* Página inicial redireciona para dashboard */}
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               
@@ -260,7 +345,7 @@ const App = () => {
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
-      </AuthContext.Provider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 };

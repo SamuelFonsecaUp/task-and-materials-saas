@@ -2,9 +2,11 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Interface para definir a estrutura de uma tarefa
-interface Task {
+export interface Task {
   id: number;
   companyName: string;
   companyLogo: string;
@@ -16,16 +18,33 @@ interface Task {
     name: string;
     avatar: string;
   };
+  description?: string;
+  project?: {
+    id: number;
+    name: string;
+  };
+  createdAt?: string;
+  checklist?: {
+    id: number;
+    text: string;
+    completed: boolean;
+  }[];
 }
 
 // Interface para as props do componente TaskTable
 interface TaskTableProps {
   tasks: Task[];
   onTaskClick: (task: Task) => void;
+  isLoading?: boolean;
+  onSort?: (column: string) => void;
 }
 
 // Componente para renderizar a tabela de tarefas
-const TaskTable = ({ tasks, onTaskClick }: TaskTableProps) => {
+const TaskTable = ({ tasks, onTaskClick, isLoading = false, onSort }: TaskTableProps) => {
+  // Estado para controlar a coluna de ordenação atual
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
   // Função para obter as iniciais do nome para o fallback do avatar
   const getInitials = (name?: string) => {
     if (!name) return "?";
@@ -37,8 +56,38 @@ const TaskTable = ({ tasks, onTaskClick }: TaskTableProps) => {
       .substring(0, 2);
   };
 
+  // Função para ordenar colunas
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      // Se já estamos ordenando por esta coluna, invertemos a direção
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Nova coluna para ordenar
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+    
+    // Chamar callback de ordenação se fornecido
+    if (onSort) {
+      onSort(column);
+    }
+  };
+
+  // Renderiza um cabeçalho de coluna ordenável
+  const renderSortableHeader = (title: string, column: string) => (
+    <div 
+      className="flex items-center gap-1 cursor-pointer hover:text-primary transition-colors"
+      onClick={() => handleSort(column)}
+    >
+      {title}
+      {sortColumn === column && (
+        <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+      )}
+    </div>
+  );
+
   // Função para renderizar o status com cores diferentes
-  const renderStatus = (status: string) => {
+  const renderStatus = (status: 'pending' | 'in-progress' | 'completed') => {
     switch (status) {
       case 'pending':
         return <Badge variant="outline" className="bg-warning/20 text-warning border-warning/20">Pendente</Badge>;
@@ -52,7 +101,7 @@ const TaskTable = ({ tasks, onTaskClick }: TaskTableProps) => {
   };
 
   // Função para renderizar a prioridade com cores diferentes
-  const renderPriority = (priority: string) => {
+  const renderPriority = (priority: 'low' | 'medium' | 'high' | 'urgent') => {
     switch (priority) {
       case 'low':
         return <Badge variant="outline" className="bg-success/20 text-success border-success/20">Baixa</Badge>;
@@ -67,17 +116,59 @@ const TaskTable = ({ tasks, onTaskClick }: TaskTableProps) => {
     }
   };
 
+  // Renderizar skeleton loader quando estiver carregando
+  if (isLoading) {
+    return (
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[180px]">Empresa</TableHead>
+              <TableHead>Título da Tarefa</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Data de Vencimento</TableHead>
+              <TableHead>Prioridade</TableHead>
+              <TableHead>Responsável</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {[...Array(5)].map((_, index) => (
+              <TableRow key={index}>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-8 w-8 rounded" />
+                    <Skeleton className="h-4 w-[120px]" />
+                  </div>
+                </TableCell>
+                <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-[100px]" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-[80px]" /></TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <Skeleton className="h-4 w-[100px]" />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[180px]">Empresa</TableHead>
-            <TableHead>Título da Tarefa</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Data de Vencimento</TableHead>
-            <TableHead>Prioridade</TableHead>
-            <TableHead>Responsável</TableHead>
+            <TableHead className="w-[180px]">{renderSortableHeader('Empresa', 'companyName')}</TableHead>
+            <TableHead>{renderSortableHeader('Título da Tarefa', 'title')}</TableHead>
+            <TableHead>{renderSortableHeader('Status', 'status')}</TableHead>
+            <TableHead>{renderSortableHeader('Data de Vencimento', 'dueDate')}</TableHead>
+            <TableHead>{renderSortableHeader('Prioridade', 'priority')}</TableHead>
+            <TableHead>{renderSortableHeader('Responsável', 'assignedTo')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -95,6 +186,7 @@ const TaskTable = ({ tasks, onTaskClick }: TaskTableProps) => {
                       src={task.companyLogo} 
                       alt={task.companyName}
                       className="h-full w-full object-cover"
+                      loading="lazy" // Adicionado lazy loading para imagens
                     />
                   </div>
                   <span>{task.companyName}</span>
@@ -121,6 +213,7 @@ const TaskTable = ({ tasks, onTaskClick }: TaskTableProps) => {
                       <AvatarImage 
                         src={task.assignedTo.avatar} 
                         alt={task.assignedTo.name || "Usuário"}
+                        loading="lazy" // Adicionado lazy loading para avatares
                       />
                     ) : null}
                     <AvatarFallback>
