@@ -1,41 +1,15 @@
-
 import { useState } from "react";
-import { 
-  Card,
-  CardContent
-} from "@/components/ui/card";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger
-} from "@/components/ui/tabs";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Edit, Plus, Settings, Trash } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import TaskGroup from "@/components/tasks/TaskGroup";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Tasks = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterProject, setFilterProject] = useState("all");
-  
+
   // Mock tasks data
   const tasks = [
     {
@@ -157,124 +131,15 @@ const Tasks = () => {
     return matchesSearch && matchesStatus && matchesProject;
   });
 
-  const pendingTasks = filteredTasks.filter((task) => task.status === "pending");
-  const inProgressTasks = filteredTasks.filter((task) => task.status === "in-progress");
-  const completedTasks = filteredTasks.filter((task) => task.status === "completed");
-
-  const renderChecklist = (checklist) => {
-    const completed = checklist.filter(item => item.completed).length;
-    const total = checklist.length;
-    
-    return (
-      <div className="mt-3">
-        <div className="flex justify-between text-xs text-gray-500 mb-1">
-          <span>Checklist</span>
-          <span>{completed}/{total}</span>
-        </div>
-        <div className="space-y-1">
-          {checklist.slice(0, 2).map((item) => (
-            <div key={item.id} className="flex items-center">
-              <Checkbox id={`checklist-${item.id}`} checked={item.completed} disabled />
-              <label 
-                htmlFor={`checklist-${item.id}`} 
-                className={`ml-2 text-xs ${item.completed ? 'line-through text-gray-400' : ''}`}
-              >
-                {item.text}
-              </label>
-            </div>
-          ))}
-          {checklist.length > 2 && (
-            <div className="text-xs text-agency-primary">+ {checklist.length - 2} mais items</div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  const renderTaskCard = (task) => (
-    <Card key={task.id} className="card-hover mb-3">
-      <CardContent className="p-4">
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <div className="flex items-center mb-1">
-              <h3 className="font-medium">{task.title}</h3>
-              <Badge 
-                className={`ml-2 ${
-                  task.priority === 'high' ? 'bg-error/20 text-error' : 
-                  task.priority === 'medium' ? 'bg-warning/20 text-warning' : 
-                  'bg-success/20 text-success'
-                }`}
-              >
-                {task.priority === 'high' ? 'Alta' : 
-                 task.priority === 'medium' ? 'Média' : 'Baixa'}
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground line-clamp-1 mb-2">
-              {task.description}
-            </p>
-            <div className="flex justify-between items-center text-sm">
-              <div className="text-agency-primary font-medium">
-                {task.project.name}
-              </div>
-              <div className="text-gray-500">
-                Prazo: {task.dueDate}
-              </div>
-            </div>
-            
-            {renderChecklist(task.checklist)}
-          </div>
-          <div className="ml-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer">
-                  <Edit className="mr-2 h-4 w-4" /> Editar
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
-                  Alterar Status
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive cursor-pointer">
-                  <Trash className="mr-2 h-4 w-4" /> Excluir
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-        <div className="mt-4 flex justify-between items-center">
-          <div className="flex items-center">
-            <div className="h-8 w-8 rounded-full overflow-hidden">
-              <img 
-                src={task.assignedTo.avatar} 
-                alt={task.assignedTo.name} 
-                className="h-full w-full object-cover" 
-              />
-            </div>
-            <span className="ml-2 text-xs text-gray-500">
-              {task.assignedTo.name}
-            </span>
-          </div>
-          <Badge 
-            className={`
-              ${task.status === 'pending' ? 'status-pending' : ''}
-              ${task.status === 'in-progress' ? 'status-in-progress' : ''}
-              ${task.status === 'completed' ? 'status-completed' : ''}
-            `}
-          >
-            {task.status === 'pending' ? 'Pendente' : ''}
-            {task.status === 'in-progress' ? 'Em Andamento' : ''}
-            {task.status === 'completed' ? 'Concluída' : ''}
-          </Badge>
-        </div>
-      </CardContent>
-    </Card>
-  );
+  // Group tasks by date
+  const tasksByDate = filteredTasks.reduce((groups: Record<string, any[]>, task) => {
+    const date = task.dueDate;
+    if (!groups[date]) {
+      groups[date] = [];
+    }
+    groups[date].push(task);
+    return groups;
+  }, {});
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -323,56 +188,28 @@ const Tasks = () => {
         </Select>
       </div>
 
-      <Tabs defaultValue="all" className="w-full">
-        <TabsList>
-          <TabsTrigger value="all">
-            Todas ({filteredTasks.length})
-          </TabsTrigger>
-          <TabsTrigger value="pending">
-            Pendentes ({pendingTasks.length})
-          </TabsTrigger>
-          <TabsTrigger value="in-progress">
-            Em Andamento ({inProgressTasks.length})
-          </TabsTrigger>
-          <TabsTrigger value="completed">
-            Concluídas ({completedTasks.length})
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="all" className="mt-6">
-          <div className="space-y-4">
-            {filteredTasks.map(renderTaskCard)}
+      <div className="mt-6">
+        {Object.entries(tasksByDate).map(([date, tasks]) => (
+          <TaskGroup 
+            key={date}
+            day={new Date(date).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric' })}
+            count={tasks.length}
+            tasks={tasks}
+          />
+        ))}
+
+        {filteredTasks.length === 0 && (
+          <div className="text-center py-10">
+            <p className="text-lg font-medium mb-2">Nenhuma tarefa encontrada</p>
+            <p className="text-sm text-muted-foreground mb-4">
+              Tente ajustar seus filtros ou criar uma nova tarefa
+            </p>
+            <Button className="bg-agency-primary hover:bg-agency-secondary">
+              <Plus className="mr-2 h-4 w-4" /> Nova Tarefa
+            </Button>
           </div>
-        </TabsContent>
-        
-        <TabsContent value="pending" className="mt-6">
-          <div className="space-y-4">
-            {pendingTasks.map(renderTaskCard)}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="in-progress" className="mt-6">
-          <div className="space-y-4">
-            {inProgressTasks.map(renderTaskCard)}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="completed" className="mt-6">
-          <div className="space-y-4">
-            {completedTasks.map(renderTaskCard)}
-          </div>
-        </TabsContent>
-      </Tabs>
-      
-      {filteredTasks.length === 0 && (
-        <div className="text-center py-10">
-          <p className="text-lg font-medium mb-2">Nenhuma tarefa encontrada</p>
-          <p className="text-sm text-muted-foreground mb-4">Tente ajustar seus filtros ou criar uma nova tarefa</p>
-          <Button className="bg-agency-primary hover:bg-agency-secondary">
-            <Plus className="mr-2 h-4 w-4" /> Nova Tarefa
-          </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
