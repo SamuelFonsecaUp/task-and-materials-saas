@@ -4,17 +4,21 @@ import { Button } from "@/components/ui/button";
 import TaskRow from "./TaskRow";
 import { useState } from "react";
 
+// Interface para as propriedades do TaskGroup
 interface TaskGroupProps {
   day: string;
   count: number;
-  tasks: any[];
+  tasks: any[]; // Lista de tarefas a serem exibidas
 }
 
+// Componente que agrupa tarefas por dia
 const TaskGroup = ({ day, count, tasks }: TaskGroupProps) => {
+  // Estado para controlar a expansão/colapso do grupo
   const [isExpanded, setIsExpanded] = useState(true);
 
   return (
     <div className="mb-4">
+      {/* Cabeçalho do grupo com toggle de expansão */}
       <div 
         className="flex items-center justify-between py-2 px-4 bg-background cursor-pointer hover:bg-muted/50"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -30,6 +34,7 @@ const TaskGroup = ({ day, count, tasks }: TaskGroupProps) => {
         </Button>
       </div>
       
+      {/* Lista de tarefas que é exibida quando o grupo está expandido */}
       {isExpanded && (
         <div className="mt-1">
           {tasks.map((task) => (

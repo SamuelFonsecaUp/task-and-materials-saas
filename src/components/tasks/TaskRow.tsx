@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Settings, Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Interface que define a estrutura de uma tarefa
 interface Task {
@@ -18,13 +19,13 @@ interface Task {
   title: string;
   priority: 'high' | 'medium' | 'low';
   status: 'pending' | 'in-progress' | 'completed';
-  project: {
+  project?: {
     name: string;
   };
-  client: {
+  client?: {
     name: string;
   };
-  assignedTo: {
+  assignedTo?: {
     name: string;
     avatar: string;
   };
@@ -32,6 +33,17 @@ interface Task {
 
 // Componente que renderiza uma linha individual de tarefa
 const TaskRow = ({ task }: { task: Task }) => {
+  // Extrair iniciais do nome para fallback do avatar
+  const getInitials = (name?: string) => {
+    if (!name) return "?";
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
+
   return (
     // Container principal da linha de tarefa com estilo de hover e borda inferior
     <div className="flex items-center justify-between py-2 px-4 hover:bg-muted/50 border-b">
@@ -56,9 +68,9 @@ const TaskRow = ({ task }: { task: Task }) => {
           </div>
           {/* Informações do projeto e cliente */}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>{task.project.name}</span>
-            <span>•</span>
-            <span>{task.client.name}</span>
+            {task.project?.name && <span>{task.project.name}</span>}
+            {task.project?.name && task.client?.name && <span>•</span>}
+            {task.client?.name && <span>{task.client.name}</span>}
           </div>
         </div>
       </div>
@@ -79,13 +91,17 @@ const TaskRow = ({ task }: { task: Task }) => {
            'Concluída'}
         </Badge>
         {/* Avatar do responsável pela tarefa */}
-        <div className="h-8 w-8 rounded-full overflow-hidden">
-          <img 
-            src={task.assignedTo.avatar}
-            alt={task.assignedTo.name}
-            className="h-full w-full object-cover"
-          />
-        </div>
+        <Avatar className="h-8 w-8">
+          {task.assignedTo?.avatar ? (
+            <AvatarImage 
+              src={task.assignedTo.avatar} 
+              alt={task.assignedTo.name || "Usuário"}
+            />
+          ) : null}
+          <AvatarFallback>
+            {getInitials(task.assignedTo?.name)}
+          </AvatarFallback>
+        </Avatar>
         {/* Menu dropdown de ações */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
