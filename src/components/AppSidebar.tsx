@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -60,6 +59,11 @@ const AppSidebar = () => {
       title: "Calendário",
       url: "/calendar",
       icon: <Calendar className="h-5 w-5" />,
+    },
+    {
+      title: "Configurações",
+      url: "/settings",
+      icon: <Settings className="h-5 w-5" />,
     }
   ];
 
@@ -113,32 +117,9 @@ const AppSidebar = () => {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
-          
-          {user.role === "admin" && (
-            <SidebarGroup>
-              <SidebarGroupLabel>Administração</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {adminItems.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton 
-                        asChild 
-                        className={isActive(item.url) ? "nav-link nav-link-active" : "nav-link nav-link-inactive"}
-                      >
-                        <Link to={item.url}>
-                          {item.icon}
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          )}
         </SidebarContent>
         
-        <div className="mt-auto p-4 border-t">
+        <div className="mt-auto p-4 border-t cursor-pointer" onClick={() => window.location.href = '/profile'}>
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-full overflow-hidden">
               <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +10,8 @@ import Projects from "./pages/Projects";
 import Tasks from "./pages/Tasks";
 import Materials from "./pages/Materials";
 import Clients from "./pages/Clients";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import MainLayout from "./layouts/MainLayout";
 
 const queryClient = new QueryClient();
@@ -53,6 +54,22 @@ const App = () => (
             element={
               <MainLayout>
                 <Clients />
+              </MainLayout>
+            } 
+          />
+          <Route 
+            path="/profile" 
+            element={
+              <MainLayout>
+                <Profile />
+              </MainLayout>
+            } 
+          />
+          <Route 
+            path="/settings" 
+            element={
+              <MainLayout>
+                <Settings />
               </MainLayout>
             } 
           />
