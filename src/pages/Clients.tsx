@@ -184,7 +184,6 @@ const Clients = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full"
-            prefix={<Search className="h-4 w-4 text-muted-foreground" />}
           />
         </div>
         <Select value={filterSector} onValueChange={setFilterSector}>
