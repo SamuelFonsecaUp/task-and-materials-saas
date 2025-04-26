@@ -1,336 +1,172 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, ClipboardCheck, Folder, MessageCircle, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Send } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
+// Componente da página de Dashboard para clientes
 const Dashboard = () => {
-  // Mock data
-  const stats = [
-    {
-      title: "Projetos Ativos",
-      value: "12",
-      icon: <Folder className="h-5 w-5" />,
-      change: "+2",
-      color: "bg-agency-primary/10 text-agency-primary",
-    },
-    {
-      title: "Tarefas Pendentes",
-      value: "36",
-      icon: <ClipboardCheck className="h-5 w-5" />,
-      change: "-5",
-      color: "bg-warning/10 text-warning",
-    },
-    {
-      title: "Materiais para Aprovação",
-      value: "8",
-      icon: <MessageCircle className="h-5 w-5" />,
-      change: "+3",
-      color: "bg-agency-secondary/10 text-agency-secondary",
-    },
-    {
-      title: "Clientes Ativos",
-      value: "24",
-      icon: <User className="h-5 w-5" />,
-      change: "+1",
-      color: "bg-success/10 text-success",
-    },
-  ];
-
-  const recentProjects = [
+  // Estado para gerenciar as mensagens do chat
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([
     {
       id: 1,
-      name: "Campanha de Lançamento",
-      client: "Empresa ABC",
-      progress: 75,
-      tasks: { completed: 15, total: 20 },
-      dueDate: "28/05/2025",
-    },
-    {
-      id: 2,
-      name: "Redesign de Site",
-      client: "Empresa XYZ",
-      progress: 40,
-      tasks: { completed: 8, total: 20 },
-      dueDate: "15/06/2025",
-    },
-    {
-      id: 3,
-      name: "Campanha de Mídia Social",
-      client: "Empresa 123",
-      progress: 90,
-      tasks: { completed: 18, total: 20 },
-      dueDate: "10/05/2025",
-    },
-  ];
+      text: "Olá! Como posso te ajudar com seu projeto hoje?",
+      sender: "agency",
+      user: {
+        name: "Atendimento",
+        avatar: "https://i.pravatar.cc/150?img=3"
+      },
+      timestamp: "10:30"
+    }
+  ]);
+  
+  // Mock de dados do projeto atual
+  const currentProject = {
+    id: 1,
+    name: "Campanha de Marketing Digital"
+  };
 
-  const upcomingTasks = [
-    {
-      id: 1,
-      title: "Revisar materiais de campanha",
-      project: "Campanha de Lançamento",
-      dueDate: "05/05/2025",
-      status: "pending",
-    },
-    {
-      id: 2,
-      title: "Finalizar design da home",
-      project: "Redesign de Site",
-      dueDate: "07/05/2025",
-      status: "in-progress",
-    },
-    {
-      id: 3,
-      title: "Criar copy para anúncios",
-      project: "Campanha de Mídia Social",
-      dueDate: "10/05/2025",
-      status: "pending",
-    },
-    {
-      id: 4,
-      title: "Apresentação para cliente",
-      project: "Campanha de Lançamento",
-      dueDate: "12/05/2025",
-      status: "pending",
-    },
-  ];
+  // Função para enviar mensagem
+  const handleSendMessage = () => {
+    if (message.trim()) {
+      const newMessage = {
+        id: messages.length + 1,
+        text: message,
+        sender: "client",
+        user: {
+          name: "Você",
+          avatar: "https://i.pravatar.cc/150?img=68"
+        },
+        timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+      };
+      
+      setMessages([...messages, newMessage]);
+      setMessage("");
+      
+      // Aqui seria feita a chamada para a API: POST /api/chat/messages
+      console.log("Enviando mensagem para API:", { projectId: currentProject.id, text: message });
+    }
+  };
 
-  const recentMaterials = [
-    {
-      id: 1,
-      name: "Banner Principal - Home",
-      project: "Redesign de Site",
-      uploadDate: "03/05/2025",
-      status: "pending-approval",
-    },
-    {
-      id: 2,
-      name: "Logotipo Final",
-      project: "Redesign de Marca",
-      uploadDate: "02/05/2025",
-      status: "changes-requested",
-    },
-    {
-      id: 3,
-      name: "Post Instagram - Produto X",
-      project: "Campanha de Mídia Social",
-      uploadDate: "01/05/2025",
-      status: "approved",
-    },
-  ];
-
-  const upcomingEvents = [
-    {
-      id: 1,
-      title: "Reunião de Kick-off",
-      project: "Novo Projeto",
-      date: "08/05/2025",
-      time: "10:00",
-    },
-    {
-      id: 2,
-      title: "Apresentação para Cliente",
-      project: "Campanha de Lançamento",
-      date: "10/05/2025",
-      time: "14:30",
-    },
-    {
-      id: 3,
-      title: "Review de Materiais",
-      project: "Redesign de Site",
-      date: "12/05/2025",
-      time: "11:00",
-    },
-  ];
+  // Função para obter as iniciais do nome para o fallback do avatar
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Bem-vindo de volta, Admin!</p>
+        <p className="text-muted-foreground">Bem-vindo ao seu painel de controle</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, index) => (
-          <Card key={index} className="card-hover">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                  <p className="text-3xl font-bold mt-1">{stat.value}</p>
-                </div>
-                <div className={`p-3 rounded-full ${stat.color}`}>
-                  {stat.icon}
-                </div>
-              </div>
-              <div className="mt-4 text-sm">
-                <span className={stat.change.includes("+") ? "text-success" : "text-warning"}>
-                  {stat.change} este mês
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <Tabs defaultValue="projects" className="w-full">
-        <TabsList className="mb-6">
-          <TabsTrigger value="projects">Projetos</TabsTrigger>
-          <TabsTrigger value="tasks">Tarefas</TabsTrigger>
-          <TabsTrigger value="materials">Materiais</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="projects" className="space-y-4">
-          <h2 className="section-header">Projetos em Andamento</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recentProjects.map((project) => (
-              <Card key={project.id} className="card-hover">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg flex justify-between items-start">
-                    <span>{project.name}</span>
-                  </CardTitle>
-                  <CardDescription>{project.client}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between mb-1 text-sm">
-                        <span>Progresso</span>
-                        <span>{project.progress}%</span>
-                      </div>
-                      <Progress value={project.progress} className="h-2" />
-                    </div>
-                    
-                    <div className="flex justify-between text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Tarefas: </span>
-                        <span className="font-medium">{project.tasks.completed}/{project.tasks.total}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Prazo: </span>
-                        <span className="font-medium">{project.dueDate}</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="tasks" className="space-y-4">
-          <h2 className="section-header">Tarefas Próximas</h2>
-          <div className="space-y-4">
-            {upcomingTasks.map((task) => (
-              <Card key={task.id} className="card-hover">
-                <CardContent className="p-4 flex justify-between items-center">
-                  <div>
-                    <h3 className="font-medium">{task.title}</h3>
-                    <p className="text-sm text-muted-foreground">{task.project}</p>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="text-right">
-                      <p className="text-sm font-medium">{task.dueDate}</p>
-                      <Badge 
-                        className={`
-                          ${task.status === 'pending' ? 'status-pending' : ''}
-                          ${task.status === 'in-progress' ? 'status-in-progress' : ''}
-                          ${task.status === 'completed' ? 'status-completed' : ''}
-                        `}
-                      >
-                        {task.status === 'pending' ? 'Pendente' : ''}
-                        {task.status === 'in-progress' ? 'Em Andamento' : ''}
-                        {task.status === 'completed' ? 'Concluída' : ''}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="materials" className="space-y-4">
-          <h2 className="section-header">Materiais Recentes</h2>
-          <div className="space-y-4">
-            {recentMaterials.map((material) => (
-              <Card key={material.id} className="card-hover">
-                <CardContent className="p-4 flex justify-between items-center">
-                  <div>
-                    <h3 className="font-medium">{material.name}</h3>
-                    <p className="text-sm text-muted-foreground">{material.project}</p>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="text-right">
-                      <p className="text-sm font-medium">{material.uploadDate}</p>
-                      <Badge 
-                        className={`
-                          ${material.status === 'pending-approval' ? 'status-pending' : ''}
-                          ${material.status === 'changes-requested' ? 'status-changes-requested' : ''}
-                          ${material.status === 'approved' ? 'status-approved' : ''}
-                        `}
-                      >
-                        {material.status === 'pending-approval' ? 'Aguardando Aprovação' : ''}
-                        {material.status === 'changes-requested' ? 'Alterações Solicitadas' : ''}
-                        {material.status === 'approved' ? 'Aprovado' : ''}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Dashboard de Tráfego Pago</CardTitle>
-              <CardDescription>Visão geral das campanhas ativas</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[300px] flex items-center justify-center border rounded-lg bg-gray-50 text-center p-4">
-                <div>
-                  <p className="text-lg font-medium text-agency-primary mb-2">Looker Studio Dashboard</p>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Integração com Looker Studio para visualização de dados de tráfego pago aparecerá aqui.
+      <div className="grid grid-cols-1 gap-6">
+        {/* Card com iframe do Looker Studio */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Métricas do Projeto</CardTitle>
+            <CardDescription>
+              Confira o desempenho de suas campanhas em tempo real
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="w-full">
+              {/* Iframe responsivo simulado para o Looker Studio */}
+              <div className="w-full min-h-[600px] bg-muted/30 flex items-center justify-center rounded-lg">
+                <div className="text-center p-6">
+                  <h3 className="text-xl font-bold mb-2">Looker Studio Dashboard</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Este é um placeholder para o dashboard do Looker Studio.
+                    <br />Em um ambiente de produção, um iframe seria carregado aqui.
                   </p>
-                  <Badge className="bg-agency-primary">Implementação Futura</Badge>
+                  {/* Nota: Em produção, substitua esta div por um iframe real do Looker Studio */}
+                  {/* <iframe 
+                    src="https://lookerstudio.google.com/embed/dashboard-id" 
+                    width="100%" 
+                    height="600" 
+                    frameBorder="0"
+                    allowFullScreen
+                  ></iframe> */}
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-        
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex justify-between items-center">
-                <span>Próximos Eventos</span>
-                <Calendar className="h-5 w-5 text-agency-secondary" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {upcomingEvents.map((event) => (
-                  <div key={event.id} className="border-b pb-3 last:border-0">
-                    <p className="font-medium">{event.title}</p>
-                    <p className="text-sm text-muted-foreground">{event.project}</p>
-                    <div className="flex items-center mt-2 text-sm">
-                      <Calendar className="h-3 w-3 mr-1" />
-                      <span>{event.date}</span>
-                      <span className="mx-1">•</span>
-                      <span>{event.time}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card com widget de chat */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Chat de Solicitações</CardTitle>
+            <CardDescription>
+              Envie mensagens para nossa equipe
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col h-[500px]">
+              {/* Área de mensagens */}
+              <div className="flex-1 overflow-y-auto mb-4 space-y-4 p-4 rounded-lg bg-muted/30">
+                {messages.map((msg) => (
+                  <div 
+                    key={msg.id} 
+                    className={`flex items-start gap-3 ${msg.sender === 'client' ? 'flex-row-reverse' : ''}`}
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={msg.user.avatar} alt={msg.user.name} />
+                      <AvatarFallback>{getInitials(msg.user.name)}</AvatarFallback>
+                    </Avatar>
+                    
+                    <div 
+                      className={`max-w-[80%] rounded-lg p-3 ${
+                        msg.sender === 'client' 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-muted'
+                      }`}
+                    >
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-medium text-sm">{msg.user.name}</span>
+                        <span className="text-xs opacity-70">{msg.timestamp}</span>
+                      </div>
+                      <p className="text-sm">{msg.text}</p>
                     </div>
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              
+              {/* Área de input */}
+              <div className="flex gap-2">
+                <Textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Digite sua mensagem..."
+                  className="resize-none"
+                  rows={3}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                />
+                <Button 
+                  onClick={handleSendMessage}
+                  disabled={!message.trim()} 
+                  className="h-auto"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

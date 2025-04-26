@@ -1,22 +1,50 @@
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import TaskGroup from "@/components/tasks/TaskGroup";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import TaskTable from "@/components/tasks/TaskTable";
+import TaskDetailModal from "@/components/tasks/TaskDetailModal";
 
 const Tasks = () => {
+  // Estados para gerenciar filtros
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterProject, setFilterProject] = useState("all");
+  const [filterResponsible, setFilterResponsible] = useState("all");
+  const [isMyTasksMode, setIsMyTasksMode] = useState(false);
+  
+  // Estado para controle do modal de detalhes
+  const [selectedTask, setSelectedTask] = useState<any | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Mock tasks data
+  // Mock dados do usuário atual
+  const currentUser = {
+    id: 1,
+    name: "Admin User",
+    role: "admin"
+  };
+
+  // Mock dados de usuários para o filtro de responsáveis
+  const users = [
+    { id: 1, name: "Ana Silva", avatar: "https://i.pravatar.cc/150?img=1" },
+    { id: 2, name: "João Costa", avatar: "https://i.pravatar.cc/150?img=2" },
+    { id: 3, name: "Maria Souza", avatar: "https://i.pravatar.cc/150?img=3" },
+    { id: 4, name: "Carlos Pereira", avatar: "https://i.pravatar.cc/150?img=4" },
+    { id: 5, name: "Paula Lima", avatar: "https://i.pravatar.cc/150?img=5" }
+  ];
+
+  // Mock de dados de tarefas
   const tasks = [
     {
       id: 1,
       title: "Criar banner para homepage",
       description: "Criar banner principal para a homepage do novo site",
+      companyName: "Empresa ABC",
+      companyLogo: "https://i.pravatar.cc/150?img=56",
       project: { id: 2, name: "Redesign de Site" },
+      createdAt: "01/05/2025",
       dueDate: "10/05/2025",
       status: "pending",
       priority: "high",
@@ -35,7 +63,10 @@ const Tasks = () => {
       id: 2,
       title: "Escrever copy para anúncios",
       description: "Desenvolver textos para campanha de Google Ads",
+      companyName: "Empresa XYZ",
+      companyLogo: "https://i.pravatar.cc/150?img=57",
       project: { id: 1, name: "Campanha de Lançamento" },
+      createdAt: "02/05/2025",
       dueDate: "12/05/2025",
       status: "in-progress",
       priority: "medium",
@@ -43,19 +74,16 @@ const Tasks = () => {
         id: 3,
         name: "Maria Souza",
         avatar: "https://i.pravatar.cc/150?img=3"
-      },
-      checklist: [
-        { id: 1, text: "Analisar palavras-chave", completed: true },
-        { id: 2, text: "Escrever títulos", completed: true },
-        { id: 3, text: "Escrever descrições", completed: false },
-        { id: 4, text: "Revisar e finalizar", completed: false }
-      ]
+      }
     },
     {
       id: 3,
       title: "Criar calendário de conteúdo",
       description: "Planejar conteúdo para mídias sociais do próximo mês",
+      companyName: "Empresa 123",
+      companyLogo: "https://i.pravatar.cc/150?img=58",
       project: { id: 3, name: "Campanha de Mídia Social" },
+      createdAt: "28/04/2025",
       dueDate: "15/05/2025",
       status: "completed",
       priority: "medium",
@@ -63,18 +91,16 @@ const Tasks = () => {
         id: 1,
         name: "Ana Silva",
         avatar: "https://i.pravatar.cc/150?img=1"
-      },
-      checklist: [
-        { id: 1, text: "Definir temas", completed: true },
-        { id: 2, text: "Criar cronograma", completed: true },
-        { id: 3, text: "Definir responsáveis", completed: true }
-      ]
+      }
     },
     {
       id: 4,
       title: "Desenvolver landing page",
       description: "Criar landing page para nova campanha",
+      companyName: "Empresa ABC",
+      companyLogo: "https://i.pravatar.cc/150?img=56",
       project: { id: 1, name: "Campanha de Lançamento" },
+      createdAt: "05/05/2025",
       dueDate: "20/05/2025",
       status: "pending",
       priority: "high",
@@ -82,19 +108,16 @@ const Tasks = () => {
         id: 4,
         name: "Carlos Pereira",
         avatar: "https://i.pravatar.cc/150?img=4"
-      },
-      checklist: [
-        { id: 1, text: "Wireframe", completed: true },
-        { id: 2, text: "Design", completed: false },
-        { id: 3, text: "Desenvolvimento", completed: false },
-        { id: 4, text: "Testes", completed: false }
-      ]
+      }
     },
     {
       id: 5,
       title: "Revisar materiais de SEO",
       description: "Revisar conteúdos otimizados para SEO",
+      companyName: "Empresa XYZ",
+      companyLogo: "https://i.pravatar.cc/150?img=57",
       project: { id: 5, name: "Marketing de Conteúdo" },
+      createdAt: "07/05/2025",
       dueDate: "18/05/2025",
       status: "in-progress",
       priority: "low",
@@ -102,17 +125,31 @@ const Tasks = () => {
         id: 5,
         name: "Paula Lima",
         avatar: "https://i.pravatar.cc/150?img=5"
-      },
-      checklist: [
-        { id: 1, text: "Revisar meta titles", completed: true },
-        { id: 2, text: "Revisar meta descriptions", completed: true },
-        { id: 3, text: "Revisar conteúdo interno", completed: false },
-        { id: 4, text: "Otimizar links", completed: false }
-      ]
+      }
     }
   ];
 
-  // Mock projects for filter
+  // Filtrar tarefas com base nos critérios selecionados
+  const filteredTasks = tasks.filter((task) => {
+    const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                        (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesStatus = filterStatus === "all" || task.status === filterStatus;
+    const matchesProject = filterProject === "all" || task.project.id.toString() === filterProject;
+    const matchesResponsible = filterResponsible === "all" || 
+                              (task.assignedTo && task.assignedTo.id.toString() === filterResponsible);
+    const matchesMyTaskMode = !isMyTasksMode || 
+                            (task.assignedTo && task.assignedTo.id === currentUser.id);
+    
+    return matchesSearch && matchesStatus && matchesProject && matchesResponsible && matchesMyTaskMode;
+  });
+
+  // Função para abrir o modal de detalhes da tarefa
+  const handleTaskClick = (task: any) => {
+    setSelectedTask(task);
+    setIsModalOpen(true);
+  };
+
+  // Mock de projetos para o filtro
   const projects = [
     { id: 1, name: "Campanha de Lançamento" },
     { id: 2, name: "Redesign de Site" },
@@ -120,26 +157,6 @@ const Tasks = () => {
     { id: 4, name: "Redesign de Marca" },
     { id: 5, name: "Marketing de Conteúdo" }
   ];
-
-  // Filter tasks based on search term, status and project
-  const filteredTasks = tasks.filter((task) => {
-    const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         task.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === "all" || task.status === filterStatus;
-    const matchesProject = filterProject === "all" || task.project.id.toString() === filterProject;
-    
-    return matchesSearch && matchesStatus && matchesProject;
-  });
-
-  // Group tasks by date
-  const tasksByDate = filteredTasks.reduce((groups: Record<string, any[]>, task) => {
-    const date = task.dueDate;
-    if (!groups[date]) {
-      groups[date] = [];
-    }
-    groups[date].push(task);
-    return groups;
-  }, {});
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -153,15 +170,43 @@ const Tasks = () => {
         </Button>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="md:flex-1">
+      {/* Filtros */}
+      <div className="flex flex-col md:flex-row gap-4 flex-wrap">
+        <div className="md:flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar tarefas..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full"
+            className="w-full pl-10"
           />
         </div>
+        
+        {/* Modo EU */}
+        <Button 
+          variant={isMyTasksMode ? "default" : "outline"}
+          onClick={() => setIsMyTasksMode(!isMyTasksMode)}
+          className="w-full md:w-auto"
+        >
+          Modo EU
+        </Button>
+        
+        {/* Filtro de responsável */}
+        <Select value={filterResponsible} onValueChange={setFilterResponsible}>
+          <SelectTrigger className="w-full md:w-[180px]">
+            <SelectValue placeholder="Responsável" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            {users.map((user) => (
+              <SelectItem key={user.id} value={user.id.toString()}>
+                {user.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        
+        {/* Filtro de status */}
         <Select value={filterStatus} onValueChange={setFilterStatus}>
           <SelectTrigger className="w-full md:w-[180px]">
             <SelectValue placeholder="Status" />
@@ -173,6 +218,8 @@ const Tasks = () => {
             <SelectItem value="completed">Concluídas</SelectItem>
           </SelectContent>
         </Select>
+        
+        {/* Filtro de projeto */}
         <Select value={filterProject} onValueChange={setFilterProject}>
           <SelectTrigger className="w-full md:w-[180px]">
             <SelectValue placeholder="Projeto" />
@@ -188,16 +235,13 @@ const Tasks = () => {
         </Select>
       </div>
 
+      {/* Tabela de Tarefas */}
       <div className="mt-6">
-        {Object.entries(tasksByDate).map(([date, tasks]) => (
-          <TaskGroup 
-            key={date}
-            day={new Date(date).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric' })}
-            count={tasks.length}
-            tasks={tasks}
-          />
-        ))}
-
+        <TaskTable 
+          tasks={filteredTasks} 
+          onTaskClick={handleTaskClick}
+        />
+        
         {filteredTasks.length === 0 && (
           <div className="text-center py-10">
             <p className="text-lg font-medium mb-2">Nenhuma tarefa encontrada</p>
@@ -210,6 +254,15 @@ const Tasks = () => {
           </div>
         )}
       </div>
+
+      {/* Modal de detalhes da tarefa */}
+      {selectedTask && (
+        <TaskDetailModal
+          task={selectedTask}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
     </div>
   );
 };
