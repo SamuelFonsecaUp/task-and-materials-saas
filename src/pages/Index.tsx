@@ -1,13 +1,29 @@
-// Update this page (the content is just a fallback if you fail to update the page)
 
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import Dashboard from "./Dashboard";
+import MainLayout from "@/layouts/MainLayout";
+
+// This is a wrapper component that will redirect to login or render the dashboard
 const Index = () => {
+  const navigate = useNavigate();
+  // Simulate authenticated state - in a real app, this would come from an auth context
+  const isAuthenticated = true; // For demo purposes, assume user is authenticated
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, navigate]);
+
+  if (!isAuthenticated) {
+    return null; // This will briefly show before redirecting
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <MainLayout>
+      <Dashboard />
+    </MainLayout>
   );
 };
 
