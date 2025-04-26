@@ -12,14 +12,36 @@ import {
 import { Settings, Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const TaskRow = ({ task }: { task: any }) => {
+// Interface que define a estrutura de uma tarefa
+interface Task {
+  id: number;
+  title: string;
+  priority: 'high' | 'medium' | 'low';
+  status: 'pending' | 'in-progress' | 'completed';
+  project: {
+    name: string;
+  };
+  client: {
+    name: string;
+  };
+  assignedTo: {
+    name: string;
+    avatar: string;
+  };
+}
+
+// Componente que renderiza uma linha individual de tarefa
+const TaskRow = ({ task }: { task: Task }) => {
   return (
+    // Container principal da linha de tarefa com estilo de hover e borda inferior
     <div className="flex items-center justify-between py-2 px-4 hover:bg-muted/50 border-b">
+      {/* Seção esquerda com checkbox, título e prioridade */}
       <div className="flex items-center gap-4 flex-1">
         <Checkbox />
         <div>
           <div className="flex items-center gap-2">
             <span className="font-medium">{task.title}</span>
+            {/* Badge de prioridade com cores condicionais */}
             <Badge 
               variant="outline"
               className={
@@ -32,11 +54,18 @@ const TaskRow = ({ task }: { task: any }) => {
                task.priority === 'medium' ? 'Média' : 'Baixa'}
             </Badge>
           </div>
-          <div className="text-sm text-muted-foreground">{task.project.name}</div>
+          {/* Informações do projeto e cliente */}
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>{task.project.name}</span>
+            <span>•</span>
+            <span>{task.client.name}</span>
+          </div>
         </div>
       </div>
 
+      {/* Seção direita com status, avatar e menu de ações */}
       <div className="flex items-center gap-4">
+        {/* Badge de status com cores condicionais */}
         <Badge 
           variant="secondary"
           className={
@@ -49,6 +78,7 @@ const TaskRow = ({ task }: { task: any }) => {
            task.status === 'in-progress' ? 'Em Andamento' :
            'Concluída'}
         </Badge>
+        {/* Avatar do responsável pela tarefa */}
         <div className="h-8 w-8 rounded-full overflow-hidden">
           <img 
             src={task.assignedTo.avatar}
@@ -56,6 +86,7 @@ const TaskRow = ({ task }: { task: any }) => {
             className="h-full w-full object-cover"
           />
         </div>
+        {/* Menu dropdown de ações */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
