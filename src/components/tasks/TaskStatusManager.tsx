@@ -74,6 +74,9 @@ export function TaskStatusManager() {
 
   const handleAddStatus = async () => {
     try {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error("User not authenticated");
+
       const newIndex = Math.max(...statuses.map(s => s.order_index), 0) + 1;
       const { error } = await supabase
         .from('task_statuses')
@@ -82,6 +85,7 @@ export function TaskStatusManager() {
           color: '#6b7280',
           order_index: newIndex,
           is_final: false,
+          created_by: userData.user.id // Add the created_by field
         });
 
       if (error) throw error;
