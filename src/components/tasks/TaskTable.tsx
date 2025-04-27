@@ -1,9 +1,9 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
 
 // Interface para definir a estrutura de uma tarefa
 export interface Task {
@@ -11,7 +11,7 @@ export interface Task {
   companyName: string;
   companyLogo: string;
   title: string;
-  status: 'pending' | 'in-progress' | 'completed';
+  status: string;
   dueDate: string;
   priority: 'low' | 'medium' | 'high' | 'urgent';
   assignedTo?: {
@@ -44,6 +44,26 @@ const TaskTable = ({ tasks, onTaskClick, isLoading = false, onSort }: TaskTableP
   // Estado para controlar a coluna de ordenação atual
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [taskStatuses, setTaskStatuses] = useState<Array<{ name: string, color: string }>>([]);
+
+  useEffect(() => {
+    fetchTaskStatuses();
+  }, []);
+
+  const fetchTaskStatuses = async () => {
+    try {
+      const { data } = await supabase
+        .from('task_statuses')
+        .select('name, color')
+        .order('order_index');
+      
+      if (data) {
+        setTaskStatuses(data);
+      }
+    } catch (error) {
+      console.error('Error fetching task statuses:', error);
+    }
+  };
 
   // Função para obter as iniciais do nome para o fallback do avatar
   const getInitials = (name?: string) => {
@@ -86,18 +106,19 @@ const TaskTable = ({ tasks, onTaskClick, isLoading = false, onSort }: TaskTableP
     </div>
   );
 
-  // Função para renderizar o status com cores diferentes
-  const renderStatus = (status: 'pending' | 'in-progress' | 'completed') => {
-    switch (status) {
-      case 'pending':
-        return <Badge variant="outline" className="bg-warning/20 text-warning border-warning/20">Pendente</Badge>;
-      case 'in-progress':
-        return <Badge variant="outline" className="bg-primary/20 text-primary border-primary/20">Em Andamento</Badge>;
-      case 'completed':
-        return <Badge variant="outline" className="bg-success/20 text-success border-success/20">Concluída</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
+  // Update the renderStatus function to use custom colors from taskStatuses
+  const renderStatus = (status: string) => {
+    const statusConfig = taskStatuses.find(s => s.name === status);
+    if (!statusConfig) return <Badge variant="outline">{status}</Badge>;
+
+    return (
+      <Badge 
+        variant="outline" 
+        className={`bg-[${statusConfig.color}]/20 text-[${statusConfig.color}] border-[${statusConfig.color}]/20`}
+      >
+        {status}
+      </Badge>
+    );
   };
 
   // Função para renderizar a prioridade com cores diferentes
