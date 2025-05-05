@@ -1,9 +1,10 @@
+
 import { useState } from "react";
 import { Dialog } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClientDetailModal } from "@/components/clients/ClientDetailModal";
+import ClientDetailModal from "@/components/clients/ClientDetailModal";
 
 interface Client {
   id: number;
