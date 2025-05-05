@@ -8,6 +8,15 @@ import TaskBoard from "@/components/tasks/TaskBoard";
 import TaskDetailModal from "@/components/tasks/TaskDetailModal";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/App";
+import { useToast } from "@/components/ui/use-toast";
+import { 
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const Tasks = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -23,6 +32,7 @@ const Tasks = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [sortField, setSortField] = useState<string>("dueDate");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const { toast } = useToast();
   const auth = useAuth();
   const currentUser = auth.user;
   const users = [

@@ -1,5 +1,5 @@
 
-import { format, isToday, isTomorrow, addDays } from "date-fns";
+import { format, isToday, isTomorrow, addDays, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Task } from "./TaskTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +12,19 @@ interface TaskBoardProps {
 const TaskBoard = ({ tasks, onTaskClick }: TaskBoardProps) => {
   // Group tasks by due date
   const groupedTasks = tasks.reduce((groups, task) => {
-    const dueDate = new Date(task.dueDate);
+    let dueDate: Date;
+    
+    // Handle different date formats
+    if (task.dueDate.includes('/')) {
+      // Format: DD/MM/YYYY
+      const [day, month, year] = task.dueDate.split('/').map(Number);
+      dueDate = new Date(year, month - 1, day);
+    } else {
+      // ISO format or other format
+      dueDate = new Date(task.dueDate);
+    }
+    
+    // Format date as YYYY-MM-DD for grouping
     const dateKey = format(dueDate, 'yyyy-MM-dd');
     
     if (!groups[dateKey]) {

@@ -28,10 +28,13 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Calendar, ClipboardList, Edit, Plus, Settings, Trash } from "lucide-react";
+import ProjectDetailModal from "@/components/projects/ProjectDetailModal";
 
 const Projects = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Mock projects data
   const projects = [
@@ -121,6 +124,11 @@ const Projects = () => {
     
     return matchesSearch && matchesStatus;
   });
+
+  const handleOpenProjectDetails = (project) => {
+    setSelectedProject(project);
+    setIsModalOpen(true);
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -244,7 +252,13 @@ const Projects = () => {
                     </div>
                   )}
                 </div>
-                <Button variant="outline" size="sm">Detalhes</Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => handleOpenProjectDetails(project)}
+                >
+                  Detalhes
+                </Button>
               </div>
             </CardFooter>
           </Card>
@@ -259,6 +273,14 @@ const Projects = () => {
             <Plus className="mr-2 h-4 w-4" /> Novo Projeto
           </Button>
         </div>
+      )}
+
+      {selectedProject && (
+        <ProjectDetailModal
+          project={selectedProject}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
       )}
     </div>
   );
