@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogOverlay } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -166,6 +165,22 @@ const TaskDetailModal = ({ task, isOpen, onClose }: TaskDetailModalProps) => {
     }
   };
 
+  // First, let's define the allowed status types to ensure type safety
+  type TaskStatus = "completed" | "pending" | "in-progress";
+
+  // We need to map any string status to one of the allowed values
+  const mapStatusToAllowedValue = (status: string): TaskStatus => {
+    if (status === "completed") return "completed";
+    if (status === "in-progress") return "in-progress";
+    return "pending"; // Default fallback
+  };
+
+  // Then, when using the status in the component, we need to map it:
+  // Change line 176 from something like:
+  // renderStatus(task.status)
+  // to:
+  // renderStatus(mapStatusToAllowedValue(task.status))
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogOverlay className="bg-black/50" /> {/* Overlay escuro para bloquear o background */}
@@ -173,7 +188,7 @@ const TaskDetailModal = ({ task, isOpen, onClose }: TaskDetailModalProps) => {
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl">{task.title}</DialogTitle>
-            {renderStatus(task.status)}
+            {renderStatus(mapStatusToAllowedValue(task.status))}
           </div>
         </DialogHeader>
         

@@ -1,5 +1,5 @@
 
-import { format, isToday, isTomorrow, addDays, parseISO } from "date-fns";
+import { format, isToday, isTomorrow, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Task } from "./TaskTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

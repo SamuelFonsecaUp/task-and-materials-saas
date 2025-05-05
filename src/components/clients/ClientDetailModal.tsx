@@ -1,8 +1,10 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Building, Mail, Phone, CalendarDays, FileText, Globe } from "lucide-react";
+import { Progress } from "@/components/ui/progress"; // Added the missing import
 
 interface Client {
   id: number;

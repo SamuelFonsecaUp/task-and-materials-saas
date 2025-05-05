@@ -12,9 +12,6 @@ import { Loader2 } from "lucide-react";
 
 /**
  * Página de Perfil do Usuário
- * 
- * Permite ao usuário visualizar e editar informações do perfil,
- * incluindo dados pessoais, senha e foto de perfil.
  */
 const Profile = () => {
   // Obtém dados do usuário do contexto de autenticação
@@ -58,7 +55,6 @@ const Profile = () => {
 
   /**
    * Manipula o envio do formulário de dados pessoais
-   * @param e - Evento de formulário
    */
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,10 +63,6 @@ const Profile = () => {
     try {
       // Simulação de chamada de API
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Em um app real, aqui você enviaria os dados para o backend
-      // PUT /api/users/{id}/profile
-      console.log("Salvando dados do perfil:", { name, email, phone });
       
       toast({
         title: "Perfil atualizado",
@@ -90,7 +82,6 @@ const Profile = () => {
 
   /**
    * Manipula o envio do formulário de troca de senha
-   * @param e - Evento de formulário
    */
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,10 +110,6 @@ const Profile = () => {
     try {
       // Simulação de chamada de API
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Em um app real, aqui você enviaria os dados para o backend
-      // PUT /api/users/{id}/password
-      console.log("Alterando senha");
       
       // Limpar formulário
       setCurrentPassword("");
@@ -154,7 +141,6 @@ const Profile = () => {
 
   /**
    * Manipula a seleção de arquivo para avatar
-   * @param e - Evento de input de arquivo
    */
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -202,10 +188,6 @@ const Profile = () => {
     try {
       // Simulação de upload de arquivo
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Em um app real, aqui você enviaria o arquivo para o backend
-      // PUT /api/users/{id}/avatar
-      console.log("Enviando avatar:", selectedFile.name);
       
       toast({
         title: "Avatar atualizado",
@@ -336,112 +318,115 @@ const Profile = () => {
           <div className="md:col-span-2">
             <Card>
               <CardHeader className="pb-2">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <h3 className="text-lg font-medium">Configurações</h3>
+              </CardHeader>
+              <CardContent>
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
                   <TabsList className="grid grid-cols-2 w-full">
                     <TabsTrigger value="personal">Dados Pessoais</TabsTrigger>
                     <TabsTrigger value="security">Segurança</TabsTrigger>
                   </TabsList>
+                  
+                  <TabsContent value="personal">
+                    <form onSubmit={handleProfileSubmit} className="space-y-4 pt-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Nome Completo</Label>
+                        <Input 
+                          id="name" 
+                          value={name} 
+                          onChange={(e) => setName(e.target.value)} 
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">E-mail</Label>
+                        <Input 
+                          id="email" 
+                          type="email" 
+                          value={email} 
+                          onChange={(e) => setEmail(e.target.value)} 
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Telefone</Label>
+                        <Input 
+                          id="phone" 
+                          value={phone} 
+                          onChange={(e) => setPhone(e.target.value)} 
+                          placeholder="(00) 00000-0000"
+                        />
+                      </div>
+                      <Button 
+                        type="submit" 
+                        disabled={isUpdatingProfile}
+                        className="w-full"
+                      >
+                        {isUpdatingProfile ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Salvando...
+                          </>
+                        ) : "Salvar Alterações"}
+                      </Button>
+                    </form>
+                  </TabsContent>
+                  
+                  <TabsContent value="security">
+                    <form onSubmit={handlePasswordSubmit} className="space-y-4 pt-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="current-password">Senha Atual</Label>
+                        <Input 
+                          id="current-password" 
+                          type="password" 
+                          value={currentPassword} 
+                          onChange={(e) => setCurrentPassword(e.target.value)} 
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="new-password">Nova Senha</Label>
+                        <Input 
+                          id="new-password" 
+                          type="password" 
+                          value={newPassword} 
+                          onChange={(e) => setNewPassword(e.target.value)} 
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="confirm-password">Confirmar Nova Senha</Label>
+                        <Input 
+                          id="confirm-password" 
+                          type="password" 
+                          value={confirmPassword} 
+                          onChange={(e) => setConfirmPassword(e.target.value)} 
+                          required
+                        />
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        <p>A senha deve conter:</p>
+                        <ul className="list-disc pl-5">
+                          <li>Pelo menos 6 caracteres</li>
+                          <li>Letras maiúsculas e minúsculas</li>
+                          <li>Pelo menos um número</li>
+                        </ul>
+                      </div>
+                      <Button 
+                        type="submit" 
+                        disabled={isChangingPassword}
+                        className="w-full"
+                      >
+                        {isChangingPassword ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Alterando...
+                          </>
+                        ) : "Alterar Senha"}
+                      </Button>
+                    </form>
+                  </TabsContent>
                 </Tabs>
-              </CardHeader>
-              <CardContent>
-                <TabsContent value="personal">
-                  <form onSubmit={handleProfileSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Nome Completo</Label>
-                      <Input 
-                        id="name" 
-                        value={name} 
-                        onChange={(e) => setName(e.target.value)} 
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">E-mail</Label>
-                      <Input 
-                        id="email" 
-                        type="email" 
-                        value={email} 
-                        onChange={(e) => setEmail(e.target.value)} 
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Telefone</Label>
-                      <Input 
-                        id="phone" 
-                        value={phone} 
-                        onChange={(e) => setPhone(e.target.value)} 
-                        placeholder="(00) 00000-0000"
-                      />
-                    </div>
-                    <Button 
-                      type="submit" 
-                      disabled={isUpdatingProfile}
-                      className="w-full"
-                    >
-                      {isUpdatingProfile ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Salvando...
-                        </>
-                      ) : "Salvar Alterações"}
-                    </Button>
-                  </form>
-                </TabsContent>
-                <TabsContent value="security">
-                  <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="current-password">Senha Atual</Label>
-                      <Input 
-                        id="current-password" 
-                        type="password" 
-                        value={currentPassword} 
-                        onChange={(e) => setCurrentPassword(e.target.value)} 
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="new-password">Nova Senha</Label>
-                      <Input 
-                        id="new-password" 
-                        type="password" 
-                        value={newPassword} 
-                        onChange={(e) => setNewPassword(e.target.value)} 
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="confirm-password">Confirmar Nova Senha</Label>
-                      <Input 
-                        id="confirm-password" 
-                        type="password" 
-                        value={confirmPassword} 
-                        onChange={(e) => setConfirmPassword(e.target.value)} 
-                        required
-                      />
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      <p>A senha deve conter:</p>
-                      <ul className="list-disc pl-5">
-                        <li>Pelo menos 6 caracteres</li>
-                        <li>Letras maiúsculas e minúsculas</li>
-                        <li>Pelo menos um número</li>
-                      </ul>
-                    </div>
-                    <Button 
-                      type="submit" 
-                      disabled={isChangingPassword}
-                      className="w-full"
-                    >
-                      {isChangingPassword ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Alterando...
-                        </>
-                      ) : "Alterar Senha"}
-                    </Button>
-                  </form>
-                </TabsContent>
               </CardContent>
             </Card>
           </div>
