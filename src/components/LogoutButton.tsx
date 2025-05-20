@@ -1,7 +1,7 @@
 
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/App";
+import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {

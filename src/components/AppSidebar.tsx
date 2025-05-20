@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -24,7 +23,7 @@ import {
   SidebarMenuItem, 
   SidebarTrigger
 } from "@/components/ui/sidebar";
-import { useAuth } from "@/App";
+import { useAuth } from "@/contexts/AuthContext";
 
 const AppSidebar = () => {
   const location = useLocation();

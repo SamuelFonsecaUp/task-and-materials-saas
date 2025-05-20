@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/App";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import TaskTable from "@/components/tasks/TaskTable";
 import TaskBoard from "@/components/tasks/TaskBoard";
