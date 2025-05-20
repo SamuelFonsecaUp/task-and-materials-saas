@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Building, Mail, Phone, CalendarDays, FileText, Globe } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import ClientLookerStudio from "./ClientLookerStudio";
 
 interface Client {
   id: number;
@@ -19,6 +20,7 @@ interface Client {
   joinDate?: string;
   projects?: number;
   status: 'active' | 'inactive';
+  lookerStudioEmbed?: string;
 }
 
 interface ClientDetailModalProps {
@@ -129,9 +131,10 @@ const ClientDetailModal = ({ client, isOpen, onClose }: ClientDetailModalProps) 
           </div>
           
           <Tabs defaultValue="projects">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="projects">Projetos</TabsTrigger>
               <TabsTrigger value="invoices">Faturas</TabsTrigger>
+              <TabsTrigger value="stats">Estatísticas</TabsTrigger>
             </TabsList>
             
             <TabsContent value="projects" className="mt-4">
@@ -200,6 +203,10 @@ const ClientDetailModal = ({ client, isOpen, onClose }: ClientDetailModalProps) 
                   </div>
                 )}
               </div>
+            </TabsContent>
+
+            <TabsContent value="stats" className="mt-4">
+              <ClientLookerStudio embedCode={client.lookerStudioEmbed} />
             </TabsContent>
           </Tabs>
         </div>
