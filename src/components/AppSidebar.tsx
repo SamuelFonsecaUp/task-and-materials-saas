@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
-  Calendar, 
   Settings, 
   Folder, 
   User, 
@@ -75,12 +74,6 @@ const AppSidebar = () => {
       title: "CRM Prospectos",
       url: "/crm-prospects",
       icon: <User className="h-5 w-5" />,
-      roles: ["collaborator", "admin"]
-    },
-    {
-      title: "Calendário",
-      url: "/calendar",
-      icon: <Calendar className="h-5 w-5" />,
       roles: ["collaborator", "admin"]
     }
   ];

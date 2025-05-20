@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientDetailModal from "@/components/clients/ClientDetailModal";
+import { Pencil } from "lucide-react";
 
 interface Client {
   id: number;
@@ -27,7 +28,7 @@ const Clients = () => {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
   // Mock data for clients
-  const clients: Client[] = [
+  const [clients, setClients] = useState<Client[]>([
     {
       id: 1,
       name: "Bela Vista Fitness",
@@ -57,11 +58,18 @@ const Clients = () => {
       projects: 3,
       status: "inactive",
     },
-  ];
+  ]);
 
   const handleClientClick = (client: Client) => {
     setSelectedClient(client);
     setIsOpen(true);
+  };
+
+  const handleClientUpdate = (updatedClient: Client) => {
+    setClients(clients.map(client => 
+      client.id === updatedClient.id ? updatedClient : client
+    ));
+    setSelectedClient(updatedClient);
   };
 
   return (
@@ -76,11 +84,15 @@ const Clients = () => {
         <TabsContent value="active">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {clients.filter(client => client.status === "active").map(client => (
-              <Card key={client.id} onClick={() => handleClientClick(client)} className="cursor-pointer">
-                <CardHeader>
+              <Card key={client.id} className="cursor-pointer">
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>{client.name}</CardTitle>
+                  <Button variant="outline" size="sm" onClick={() => handleClientClick(client)}>
+                    <Pencil className="h-4 w-4 mr-1" />
+                    Editar
+                  </Button>
                 </CardHeader>
-                <CardContent>
+                <CardContent onClick={() => handleClientClick(client)}>
                   <img src={client.logo} alt={client.name} className="w-16 h-16 mb-2" />
                   <p>{client.industry}</p>
                   <p>{client.email}</p>
@@ -93,11 +105,15 @@ const Clients = () => {
         <TabsContent value="inactive">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {clients.filter(client => client.status === "inactive").map(client => (
-              <Card key={client.id} onClick={() => handleClientClick(client)} className="cursor-pointer">
-                <CardHeader>
+              <Card key={client.id} className="cursor-pointer">
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>{client.name}</CardTitle>
+                  <Button variant="outline" size="sm" onClick={() => handleClientClick(client)}>
+                    <Pencil className="h-4 w-4 mr-1" />
+                    Editar
+                  </Button>
                 </CardHeader>
-                <CardContent>
+                <CardContent onClick={() => handleClientClick(client)}>
                   <img src={client.logo} alt={client.name} className="w-16 h-16 mb-2" />
                   <p>{client.industry}</p>
                   <p>{client.email}</p>
@@ -110,7 +126,12 @@ const Clients = () => {
 
       {selectedClient && (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <ClientDetailModal client={selectedClient} isOpen={isOpen} onClose={() => setIsOpen(false)} />
+          <ClientDetailModal 
+            client={selectedClient} 
+            isOpen={isOpen} 
+            onClose={() => setIsOpen(false)} 
+            onUpdate={handleClientUpdate}
+          />
         </Dialog>
       )}
     </div>
