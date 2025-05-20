@@ -21,10 +21,10 @@ import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
 
-// Tipo para os papéis de usuário
+// Type for user roles
 type UserRole = "client" | "collaborator" | "admin";
 
-// Interface para o usuário autenticado
+// Interface for authenticated user
 interface AuthUser {
   id: number;
   name: string;
@@ -33,7 +33,7 @@ interface AuthUser {
   avatar?: string;
 }
 
-// Interface para o contexto de autenticação
+// Interface for authentication context
 interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
@@ -42,37 +42,37 @@ interface AuthContextType {
   logout: () => void;
 }
 
-// Criação do contexto de autenticação
+// Creating authentication context
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// Hook para usar o contexto de autenticação
+// Hook for using authentication context
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth deve ser usado dentro de um AuthProvider");
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
 
 /**
- * Provedor de Autenticação
+ * Authentication Provider
  * 
- * Gerencia o estado de autenticação do usuário e fornece funções de login/logout
+ * Manages user authentication state and provides login/logout functions
  */
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Verificar se há um token salvo ao carregar o aplicativo
+  // Check for saved token on app load
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem('authToken');
       
       if (token) {
         try {
-          // Em um app real, verificaria o token com o backend
-          // Aqui estamos apenas simulando essa verificação
+          // In a real app, would verify token with backend
+          // Here we're just simulating that verification
           const mockUser = {
             id: 1,
             name: "Admin User",
@@ -84,7 +84,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(mockUser);
           setIsAuthenticated(true);
         } catch (error) {
-          console.error("Erro ao verificar token:", error);
+          console.error("Error verifying token:", error);
           localStorage.removeItem('authToken');
         }
       }
@@ -96,27 +96,27 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   /**
-   * Função de login
-   * @param email - Email do usuário
-   * @param password - Senha do usuário
+   * Login function
+   * @param email - User email
+   * @param password - User password
    */
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     
     try {
-      // Simulação de uma chamada de API
+      // API call simulation
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       let role: UserRole = "client";
-      let name = "Usuário Cliente";
+      let name = "Client User";
       
-      // Determinar o papel com base no email (apenas para simulação)
+      // Determine role based on email (for simulation)
       if (email.includes("admin")) {
         role = "admin";
         name = "Admin User";
       } else if (email.includes("colab")) {
         role = "collaborator";
-        name = "Colaborador";
+        name = "Collaborator";
       }
       
       const mockUser = {
@@ -127,7 +127,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70) + 1}`
       };
       
-      // Em um app real, aqui você receberia um JWT do backend
+      // In a real app, you would receive a JWT from the backend
       const mockToken = "mock-jwt-token";
       localStorage.setItem('authToken', mockToken);
       
@@ -139,10 +139,10 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   /**
-   * Função de logout
+   * Logout function
    */
   const logout = () => {
-    // Em um app real, aqui você poderia fazer uma chamada para invalidar o token no servidor
+    // In a real app, you might call to invalidate token on server
     localStorage.removeItem('authToken');
     setUser(null);
     setIsAuthenticated(false);
@@ -156,17 +156,17 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 /**
- * Componente de tela de carregamento
+ * Loading screen component
  */
 const LoadingScreen = () => (
   <div className="min-h-screen flex flex-col items-center justify-center">
     <Loader2 className="h-16 w-16 animate-spin text-primary mb-4" />
-    <p className="text-lg font-medium">Carregando...</p>
+    <p className="text-lg font-medium">Loading...</p>
   </div>
 );
 
 /**
- * Componente para proteger rotas baseado no papel do usuário
+ * Component to protect routes based on user role
  */
 const ProtectedRoute = ({ 
   element, 
@@ -180,44 +180,44 @@ const ProtectedRoute = ({
   const { user, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
-  // Exibe tela de carregamento enquanto verifica autenticação
+  // Show loading screen while checking authentication
   if (isLoading) {
     return <LoadingScreen />;
   }
 
-  // Redireciona para login se não estiver autenticado
+  // Redirect to login if not authenticated
   if (!isAuthenticated) {
     return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 
-  // Verifica se o usuário tem permissão para acessar a rota
+  // Check if user has permission to access route
   if (user && !allowedRoles.includes(user.role)) {
-    // Redireciona para dashboard por padrão se o usuário não tem permissão
+    // Redirect to dashboard by default if user doesn't have permission
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Permite acesso se passar por todas as verificações
+  // Allow access if passes all checks
   return <>{element}</>;
 };
 
 /**
- * Componente principal da aplicação
+ * Main application component
  */
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+        <BrowserRouter>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
             <Routes>
-              {/* Rota de login - acessível para todos */}
+              {/* Login route - accessible to all */}
               <Route path="/login" element={<Login />} />
               
-              {/* Rotas protegidas por papel */}
+              {/* Protected routes by role */}
               
-              {/* Dashboard - Acessível para todos os papéis */}
+              {/* Dashboard - Accessible to all roles */}
               <Route 
                 path="/dashboard" 
                 element={
@@ -232,7 +232,7 @@ const App = () => {
                 } 
               />
               
-              {/* Tarefas - Acessível para colaboradores e admins */}
+              {/* Tasks - Accessible to collaborators and admins */}
               <Route 
                 path="/tasks" 
                 element={
@@ -247,7 +247,7 @@ const App = () => {
                 } 
               />
               
-              {/* Projetos - Acessível para colaboradores e admins */}
+              {/* Projects - Accessible to collaborators and admins */}
               <Route 
                 path="/projects" 
                 element={
@@ -262,7 +262,7 @@ const App = () => {
                 } 
               />
               
-              {/* Materiais - Acessível para colaboradores e admins */}
+              {/* Materials - Accessible to collaborators and admins */}
               <Route 
                 path="/materials" 
                 element={
@@ -277,7 +277,7 @@ const App = () => {
                 } 
               />
               
-              {/* Clientes - Acessível apenas para admins */}
+              {/* Clients - Accessible only to admins */}
               <Route 
                 path="/clients" 
                 element={
@@ -292,7 +292,7 @@ const App = () => {
                 } 
               />
               
-              {/* CRM de Prospectos - Acessível para colaboradores e admins */}
+              {/* CRM Prospects - Accessible to collaborators and admins */}
               <Route 
                 path="/crm-prospects" 
                 element={
@@ -307,7 +307,7 @@ const App = () => {
                 } 
               />
               
-              {/* Perfil - Acessível para todos os papéis */}
+              {/* Profile - Accessible to all roles */}
               <Route 
                 path="/profile" 
                 element={
@@ -322,7 +322,7 @@ const App = () => {
                 } 
               />
               
-              {/* Configurações - Acessível para colaboradores e admins */}
+              {/* Settings - Accessible to collaborators and admins */}
               <Route 
                 path="/settings" 
                 element={
@@ -337,14 +337,14 @@ const App = () => {
                 } 
               />
               
-              {/* Página inicial redireciona para dashboard */}
+              {/* Home page redirects to dashboard */}
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               
-              {/* Página 404 para rotas não encontradas */}
+              {/* 404 page for routes not found */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+          </TooltipProvider>
+        </BrowserRouter>
       </AuthProvider>
     </QueryClientProvider>
   );
