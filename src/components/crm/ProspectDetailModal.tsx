@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -7,12 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { CalendarIcon, Mail, Phone, Send } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { Input } from "@/components/ui/input";
 
 // Interface para as props do modal
 interface ProspectDetailModalProps {
@@ -26,7 +24,7 @@ const ProspectDetailModal = ({ prospect, isOpen, onClose }: ProspectDetailModalP
   // Estados para gerenciar o formulário de nova interação
   const [interactionType, setInteractionType] = useState("email");
   const [interactionDescription, setInteractionDescription] = useState("");
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState("details");
 
   // Interações do prospecto
@@ -53,17 +51,17 @@ const ProspectDetailModal = ({ prospect, isOpen, onClose }: ProspectDetailModalP
   };
 
   // Função para obter as iniciais do nome para o fallback do avatar
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
+  const getInitials = (name) => {
+    return name.split(' ').map(part => part[0]).join('').toUpperCase().substring(0, 2);
+  };
+
+  // Função para lidar com a alteração da data
+  const handleDateChange = (e) => {
+    setDate(new Date(e.target.value));
   };
 
   // Ícone para o tipo de interação
-  const getInteractionIcon = (type: string) => {
+  const getInteractionIcon = (type) => {
     switch (type) {
       case 'email':
         return <Mail className="h-4 w-4 text-primary" />;
@@ -169,66 +167,52 @@ const ProspectDetailModal = ({ prospect, isOpen, onClose }: ProspectDetailModalP
             <div className="bg-muted/30 p-4 rounded-lg">
               <h4 className="font-medium mb-4">Registrar Nova Interação</h4>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <p className="text-sm font-medium mb-1">Tipo</p>
-                  <Select value={interactionType} onValueChange={setInteractionType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="email">Email</SelectItem>
-                      <SelectItem value="call">Ligação</SelectItem>
-                      <SelectItem value="meeting">Reunião</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                {/* Seletor de tipo de interação */}
+                <Select value={interactionType} onValueChange={setInteractionType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="email">Email</SelectItem>
+                    <SelectItem value="call">Ligação</SelectItem>
+                    <SelectItem value="meeting">Reunião</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                {/* Seletor de data - agora usando input simples */}
+                <div className="flex flex-col space-y-1.5">
+                  <Input
+                    id="interaction-date"
+                    type="date"
+                    value={format(date, "yyyy-MM-dd")}
+                    onChange={handleDateChange}
+                    className="w-full"
+                  />
                 </div>
                 
-                <div>
-                  <p className="text-sm font-medium mb-1">Data</p>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !date && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {date ? format(date, "dd/MM/yyyy") : <span>Selecione a data</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={date}
-                        onSelect={setDate}
-                        initialFocus
-                        className="p-3 pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
+                {/* Descrição da interação */}
+                <div className="md:col-span-2">
+                  <Textarea 
+                    value={interactionDescription}
+                    onChange={(e) => setInteractionDescription(e.target.value)}
+                    placeholder="Detalhes da interação"
+                    className="h-[38px] resize-none"
+                  />
                 </div>
               </div>
               
-              <div className="mb-4">
-                <p className="text-sm font-medium mb-1">Descrição</p>
-                <Textarea
-                  value={interactionDescription}
-                  onChange={(e) => setInteractionDescription(e.target.value)}
-                  placeholder="Descreva a interação..."
-                  rows={3}
-                />
+              {/* Botão de enviar */}
+              <div className="flex justify-end">
+                <Button 
+                  onClick={handleAddInteraction}
+                  disabled={!interactionDescription.trim()}
+                  size="sm"
+                >
+                  <Send className="mr-2 h-4 w-4" />
+                  Registrar
+                </Button>
               </div>
-              
-              <Button 
-                onClick={handleAddInteraction}
-                disabled={!interactionDescription.trim() || !date} 
-                className="w-full"
-              >
-                <Send className="h-4 w-4 mr-2" /> Registrar Interação
-              </Button>
             </div>
           </TabsContent>
         </Tabs>
