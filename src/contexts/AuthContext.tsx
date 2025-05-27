@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from '@supabase/supabase-js';
@@ -46,7 +45,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [session, setSession] = useState<Session | null>(null);
 
   console.log('AuthProvider rendered - Current state:', { user: user?.email, isAuthenticated, isLoading });
 
@@ -83,56 +81,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     console.log('Setting up auth state listener...');
     
-    let mounted = true;
-    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state change:', event, session?.user?.id);
         
-        if (!mounted) return;
-        
-        setSession(session);
-        
         if (session?.user) {
           console.log('User authenticated, fetching profile...');
           const userProfile = await getUserProfile(session.user.id);
-          if (userProfile && mounted) {
-            console.log('Setting user and authenticated state');
+          if (userProfile) {
+            console.log('Setting user and authenticated state to TRUE');
             setUser(userProfile);
             setIsAuthenticated(true);
-          } else if (mounted) {
-            console.log('Failed to fetch user profile');
+          } else {
+            console.log('Failed to fetch user profile, clearing state');
             setUser(null);
             setIsAuthenticated(false);
           }
-        } else if (mounted) {
+        } else {
           console.log('No session, clearing user state');
           setUser(null);
           setIsAuthenticated(false);
         }
         
-        if (mounted) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     );
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('Initial session check:', session?.user?.id);
-      if (session?.user && mounted) {
+      if (session?.user) {
         getUserProfile(session.user.id).then((userProfile) => {
-          if (userProfile && mounted) {
-            console.log('Initial user profile set');
+          if (userProfile) {
+            console.log('Initial user profile set, authenticated = TRUE');
             setUser(userProfile);
             setIsAuthenticated(true);
           }
-          if (mounted) {
-            setIsLoading(false);
-          }
+          setIsLoading(false);
         });
-      } else if (mounted) {
+      } else {
         console.log('No initial session found');
         setIsLoading(false);
       }
@@ -140,7 +128,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       console.log('Cleaning up auth subscription');
-      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
@@ -150,7 +137,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    */
   const login = async (email: string, password: string) => {
     console.log('Login attempt for:', email);
-    setIsLoading(true);
     
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -160,15 +146,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) {
         console.error('Login error:', error);
-        setIsLoading(false);
         throw error;
       }
 
       console.log('Login successful:', data.user?.id);
-      // The auth state change will handle setting the user
+      // The auth state change will handle setting the user and redirecting
     } catch (error) {
       console.error('Login failed:', error);
-      setIsLoading(false);
       throw error;
     }
   };

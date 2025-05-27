@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -22,12 +21,16 @@ const Auth = () => {
 
   console.log('Auth component rendered - State:', { isAuthenticated, authLoading });
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated - mais agressivo
   useEffect(() => {
-    console.log('Auth useEffect - checking auth state:', { authLoading, isAuthenticated });
+    console.log('Auth redirect useEffect triggered:', { authLoading, isAuthenticated });
+    
     if (!authLoading && isAuthenticated) {
-      console.log('User is authenticated, redirecting to dashboard');
-      navigate("/dashboard", { replace: true });
+      console.log('User is authenticated, redirecting to dashboard NOW');
+      // Force redirect immediately
+      setTimeout(() => {
+        navigate("/dashboard", { replace: true });
+      }, 100);
     }
   }, [isAuthenticated, authLoading, navigate]);
 
@@ -48,14 +51,13 @@ const Auth = () => {
     try {
       console.log('Attempting login...');
       await login(email, password);
-      console.log('Login successful, user should be redirected by useEffect');
+      console.log('Login completed, waiting for auth state change...');
       
       toast({
         title: "Login realizado com sucesso",
-        description: "Bem-vindo de volta!",
+        description: "Redirecionando...",
       });
       
-      // The useEffect above will handle the redirect when isAuthenticated becomes true
     } catch (error: any) {
       console.error("Erro no login:", error);
       toast({
@@ -63,7 +65,6 @@ const Auth = () => {
         description: error.message || "Credenciais inválidas",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -118,6 +119,19 @@ const Auth = () => {
     );
   }
 
+  // If authenticated, show redirecting message
+  if (isAuthenticated) {
+    console.log('User is authenticated, showing redirect message');
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Redirecionando para o dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   console.log('Rendering auth form');
 
   return (
@@ -166,7 +180,7 @@ const Auth = () => {
                   </div>
                   <Button 
                     className="w-full" 
-                    disabled={isLoading || authLoading}
+                    disabled={isLoading}
                     type="submit"
                   >
                     {isLoading ? (
@@ -229,7 +243,7 @@ const Auth = () => {
                   </div>
                   <Button 
                     className="w-full" 
-                    disabled={isLoading || authLoading}
+                    disabled={isLoading}
                     type="submit"
                   >
                     {isLoading ? (
