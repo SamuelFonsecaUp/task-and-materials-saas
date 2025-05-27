@@ -20,8 +20,11 @@ const Auth = () => {
   const { login, signup, isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
 
+  console.log('Auth component rendered - State:', { isAuthenticated, authLoading });
+
   // Redirect if already authenticated
   useEffect(() => {
+    console.log('Auth useEffect - checking auth state:', { authLoading, isAuthenticated });
     if (!authLoading && isAuthenticated) {
       console.log('User is authenticated, redirecting to dashboard');
       navigate("/dashboard", { replace: true });
@@ -30,6 +33,8 @@ const Auth = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Login form submitted');
+    
     if (!email || !password) {
       toast({
         title: "Erro",
@@ -65,6 +70,8 @@ const Auth = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Signup form submitted');
+    
     if (!email || !password || !name) {
       toast({
         title: "Erro",
@@ -100,6 +107,7 @@ const Auth = () => {
 
   // Show loading if auth is still loading
   if (authLoading) {
+    console.log('Showing auth loading screen');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -109,6 +117,8 @@ const Auth = () => {
       </div>
     );
   }
+
+  console.log('Rendering auth form');
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -156,7 +166,7 @@ const Auth = () => {
                   </div>
                   <Button 
                     className="w-full" 
-                    disabled={isLoading}
+                    disabled={isLoading || authLoading}
                     type="submit"
                   >
                     {isLoading ? (
@@ -219,7 +229,7 @@ const Auth = () => {
                   </div>
                   <Button 
                     className="w-full" 
-                    disabled={isLoading}
+                    disabled={isLoading || authLoading}
                     type="submit"
                   >
                     {isLoading ? (

@@ -48,6 +48,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
 
+  console.log('AuthProvider rendered - Current state:', { user: user?.email, isAuthenticated, isLoading });
+
   // Get user profile from public.users table
   const getUserProfile = async (userId: string): Promise<AuthUser | null> => {
     try {
@@ -81,46 +83,56 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     console.log('Setting up auth state listener...');
     
+    let mounted = true;
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state change:', event, session?.user?.id);
+        
+        if (!mounted) return;
+        
         setSession(session);
         
         if (session?.user) {
           console.log('User authenticated, fetching profile...');
           const userProfile = await getUserProfile(session.user.id);
-          if (userProfile) {
+          if (userProfile && mounted) {
             console.log('Setting user and authenticated state');
             setUser(userProfile);
             setIsAuthenticated(true);
-          } else {
+          } else if (mounted) {
             console.log('Failed to fetch user profile');
             setUser(null);
             setIsAuthenticated(false);
           }
-        } else {
+        } else if (mounted) {
           console.log('No session, clearing user state');
           setUser(null);
           setIsAuthenticated(false);
         }
-        setIsLoading(false);
+        
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     );
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('Initial session check:', session?.user?.id);
-      if (session?.user) {
+      if (session?.user && mounted) {
         getUserProfile(session.user.id).then((userProfile) => {
-          if (userProfile) {
+          if (userProfile && mounted) {
             console.log('Initial user profile set');
             setUser(userProfile);
             setIsAuthenticated(true);
           }
-          setIsLoading(false);
+          if (mounted) {
+            setIsLoading(false);
+          }
         });
-      } else {
+      } else if (mounted) {
         console.log('No initial session found');
         setIsLoading(false);
       }
@@ -128,6 +140,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       console.log('Cleaning up auth subscription');
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
@@ -147,6 +160,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) {
         console.error('Login error:', error);
+        setIsLoading(false);
         throw error;
       }
 
@@ -180,10 +194,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) {
         console.error('Signup error:', error);
+        setIsLoading(false);
         throw error;
       }
 
       console.log('Signup successful:', data.user?.id);
+      setIsLoading(false);
       // The trigger will handle creating the user profile
     } catch (error) {
       console.error('Signup failed:', error);
