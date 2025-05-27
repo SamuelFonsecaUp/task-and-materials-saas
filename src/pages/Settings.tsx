@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TaskStatusManager } from "@/components/tasks/TaskStatusManager";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const Settings = () => {
   return (
@@ -10,17 +11,19 @@ const Settings = () => {
         <p className="text-muted-foreground">Gerencie as configurações do sistema</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Status das Tarefas</CardTitle>
-          <CardDescription>
-            Personalize os status e cores das tarefas
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <TaskStatusManager />
-        </CardContent>
-      </Card>
+      <ErrorBoundary>
+        <Card>
+          <CardHeader>
+            <CardTitle>Status das Tarefas</CardTitle>
+            <CardDescription>
+              Personalize os status e cores das tarefas
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <TaskStatusManager />
+          </CardContent>
+        </Card>
+      </ErrorBoundary>
     </div>
   );
 };
