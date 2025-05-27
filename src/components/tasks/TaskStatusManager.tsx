@@ -4,105 +4,44 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Save, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-
-interface TaskStatus {
-  id: string;
-  name: string;
-  color: string;
-  order_index: number;
-  is_final: boolean;
-}
+import { useTaskStatuses } from "@/hooks/useTaskStatuses";
 
 export function TaskStatusManager() {
-  const [statuses, setStatuses] = useState<TaskStatus[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { taskStatuses, isLoading, createTaskStatus, updateTaskStatus, deleteTaskStatus } = useTaskStatuses();
+  const [localStatuses, setLocalStatuses] = useState(taskStatuses);
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchStatuses();
-  }, []);
+    setLocalStatuses(taskStatuses);
+  }, [taskStatuses]);
 
-  const fetchStatuses = async () => {
+  const handleUpdateStatus = async (status: typeof localStatuses[0]) => {
     try {
-      const { data, error } = await supabase
-        .from('task_statuses')
-        .select('*')
-        .order('order_index');
-
-      if (error) throw error;
-      setStatuses(data || []);
-    } catch (error) {
-      console.error('Error fetching statuses:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar os status das tarefas",
-        variant: "destructive",
+      await updateTaskStatus(status.id, {
+        name: status.name,
+        color: status.color,
       });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleUpdateStatus = async (status: TaskStatus) => {
-    try {
-      const { error } = await supabase
-        .from('task_statuses')
-        .update({
-          name: status.name,
-          color: status.color,
-        })
-        .eq('id', status.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Sucesso",
-        description: "Status atualizado com sucesso",
-      });
-
-      await fetchStatuses();
     } catch (error) {
       console.error('Error updating status:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível atualizar o status",
-        variant: "destructive",
-      });
     }
   };
 
   const handleAddStatus = async () => {
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error("User not authenticated");
-
-      const newIndex = Math.max(...statuses.map(s => s.order_index), 0) + 1;
-      const { error } = await supabase
-        .from('task_statuses')
-        .insert({
-          name: 'Novo Status',
-          color: '#6b7280',
-          order_index: newIndex,
-          is_final: false,
-          created_by: userData.user.id // Add the created_by field
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Sucesso",
-        description: "Novo status adicionado",
+      await createTaskStatus({
+        name: 'Novo Status',
+        color: '#6b7280',
       });
-
-      await fetchStatuses();
     } catch (error) {
       console.error('Error adding status:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível adicionar o status",
-        variant: "destructive",
-      });
+    }
+  };
+
+  const handleDeleteStatus = async (id: string) => {
+    try {
+      await deleteTaskStatus(id);
+    } catch (error) {
+      console.error('Error deleting status:', error);
     }
   };
 
@@ -121,7 +60,7 @@ export function TaskStatusManager() {
       </div>
       
       <div className="grid gap-4">
-        {statuses.map((status) => (
+        {localStatuses.map((status) => (
           <div
             key={status.id}
             className="flex items-center gap-4 p-4 bg-muted/30 rounded-lg"
@@ -131,7 +70,7 @@ export function TaskStatusManager() {
               value={status.name}
               onChange={(e) => {
                 const updatedStatus = { ...status, name: e.target.value };
-                setStatuses(statuses.map(s => 
+                setLocalStatuses(localStatuses.map(s => 
                   s.id === status.id ? updatedStatus : s
                 ));
               }}
@@ -142,7 +81,7 @@ export function TaskStatusManager() {
               value={status.color}
               onChange={(e) => {
                 const updatedStatus = { ...status, color: e.target.value };
-                setStatuses(statuses.map(s => 
+                setLocalStatuses(localStatuses.map(s => 
                   s.id === status.id ? updatedStatus : s
                 ));
               }}
@@ -161,7 +100,7 @@ export function TaskStatusManager() {
                 <Button
                   variant="destructive"
                   size="sm"
-                  disabled={status.is_final}
+                  onClick={() => handleDeleteStatus(status.id)}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>

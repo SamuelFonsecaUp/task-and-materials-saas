@@ -5,7 +5,7 @@ import MainLayout from "@/layouts/MainLayout";
 
 // Pages
 import Index from "@/pages/Index";
-import Login from "@/pages/Login";
+import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
 import Dashboard from "@/pages/Dashboard";
 import Projects from "@/pages/Projects";
@@ -19,8 +19,9 @@ import Settings from "@/pages/Settings";
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* Login route - accessible to all */}
-      <Route path="/login" element={<Login />} />
+      {/* Auth route - accessible to all */}
+      <Route path="/auth" element={<Auth />} />
+      <Route path="/login" element={<Navigate to="/auth" replace />} />
       
       {/* Protected routes by role */}
       
@@ -144,8 +145,8 @@ const AppRoutes = () => {
         } 
       />
       
-      {/* Home page redirects to dashboard */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      {/* Home page redirects to dashboard if authenticated, otherwise to auth */}
+      <Route path="/" element={<Index />} />
       
       {/* 404 page for routes not found */}
       <Route path="*" element={<NotFound />} />
