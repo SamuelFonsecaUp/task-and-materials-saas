@@ -4,9 +4,9 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 // Type for user roles
 export type UserRole = "client" | "collaborator" | "admin";
 
-// Interface for authenticated user
+// Interface for authenticated user - updated to match Supabase schema
 export interface AuthUser {
-  id: number;
+  id: string; // Changed from number to string to match UUID
   name: string;
   email: string;
   role: UserRole;
@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // In a real app, would verify token with backend
           // Here we're just simulating that verification
           const mockUser = {
-            id: 1,
+            id: "550e8400-e29b-41d4-a716-446655440000", // Mock UUID
             name: "Admin User",
             email: "admin@example.com",
             role: "admin" as UserRole,
@@ -89,18 +89,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       let role: UserRole = "client";
       let name = "Client User";
+      let userId = "550e8400-e29b-41d4-a716-446655440001"; // Mock UUID for client
       
       // Determine role based on email (for simulation)
       if (email.includes("admin")) {
         role = "admin";
         name = "Admin User";
+        userId = "550e8400-e29b-41d4-a716-446655440000"; // Mock UUID for admin
       } else if (email.includes("colab")) {
         role = "collaborator";
         name = "Collaborator";
+        userId = "550e8400-e29b-41d4-a716-446655440002"; // Mock UUID for collaborator
       }
       
       const mockUser = {
-        id: 1,
+        id: userId,
         name,
         email,
         role,

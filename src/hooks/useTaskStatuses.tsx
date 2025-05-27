@@ -28,7 +28,7 @@ export const useTaskStatuses = () => {
       const { data, error } = await supabase
         .from('task_statuses')
         .select('*')
-        .eq('created_by', user.id)
+        .eq('created_by', user.id) // user.id is now string
         .order('order_index', { ascending: true });
 
       if (error) {
@@ -57,7 +57,7 @@ export const useCreateTaskStatus = () => {
       const { data: existingStatuses } = await supabase
         .from('task_statuses')
         .select('order_index')
-        .eq('created_by', user.id)
+        .eq('created_by', user.id) // user.id is now string
         .order('order_index', { ascending: false })
         .limit(1);
 
@@ -71,7 +71,7 @@ export const useCreateTaskStatus = () => {
           {
             name: newStatus.name,
             color: newStatus.color,
-            created_by: user.id,
+            created_by: user.id, // user.id is now string
             order_index: nextOrderIndex,
             is_final: false,
           },
@@ -112,7 +112,7 @@ export const useUpdateTaskStatus = () => {
         .from('task_statuses')
         .update(updates)
         .eq('id', id)
-        .eq('created_by', user.id)
+        .eq('created_by', user.id) // user.id is now string
         .select()
         .single();
 
@@ -149,7 +149,7 @@ export const useDeleteTaskStatus = () => {
         .from('task_statuses')
         .delete()
         .eq('id', id)
-        .eq('created_by', user.id);
+        .eq('created_by', user.id); // user.id is now string
 
       if (error) {
         console.error('Error deleting task status:', error);
