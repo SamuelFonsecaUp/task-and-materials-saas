@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,8 +17,16 @@ const Auth = () => {
   const [name, setName] = useState("");
   const [role, setRole] = useState("client");
   const [isLoading, setIsLoading] = useState(false);
-  const { login, signup } = useAuth();
+  const { login, signup, isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      console.log('User is authenticated, redirecting to dashboard');
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, authLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,12 +41,16 @@ const Auth = () => {
 
     setIsLoading(true);
     try {
+      console.log('Attempting login...');
       await login(email, password);
+      console.log('Login successful, user should be redirected by useEffect');
+      
       toast({
         title: "Login realizado com sucesso",
         description: "Bem-vindo de volta!",
       });
-      navigate("/dashboard");
+      
+      // The useEffect above will handle the redirect when isAuthenticated becomes true
     } catch (error: any) {
       console.error("Erro no login:", error);
       toast({
@@ -64,11 +76,16 @@ const Auth = () => {
 
     setIsLoading(true);
     try {
+      console.log('Attempting signup...');
       await signup(email, password, name, role as any);
       toast({
         title: "Conta criada com sucesso",
         description: "Você pode fazer login agora",
       });
+      // Clear form after successful signup
+      setEmail("");
+      setPassword("");
+      setName("");
     } catch (error: any) {
       console.error("Erro no cadastro:", error);
       toast({
@@ -80,6 +97,18 @@ const Auth = () => {
       setIsLoading(false);
     }
   };
+
+  // Show loading if auth is still loading
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
