@@ -8,7 +8,9 @@ export interface TaskStatus {
   id: string;
   name: string;
   color: string;
-  user_id: string;
+  order_index: number;
+  is_final: boolean;
+  created_by: string;
   created_at: string;
   updated_at: string;
 }
@@ -26,8 +28,8 @@ export const useTaskStatuses = () => {
       const { data, error } = await supabase
         .from('task_statuses')
         .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: true });
+        .eq('created_by', user.id)
+        .order('order_index', { ascending: true });
 
       if (error) {
         console.error('Error fetching task statuses:', error);
@@ -51,13 +53,27 @@ export const useCreateTaskStatus = () => {
         throw new Error('User not authenticated');
       }
 
+      // Get the next order index
+      const { data: existingStatuses } = await supabase
+        .from('task_statuses')
+        .select('order_index')
+        .eq('created_by', user.id)
+        .order('order_index', { ascending: false })
+        .limit(1);
+
+      const nextOrderIndex = existingStatuses && existingStatuses.length > 0 
+        ? existingStatuses[0].order_index + 1 
+        : 1;
+
       const { data, error } = await supabase
         .from('task_statuses')
         .insert([
           {
             name: newStatus.name,
             color: newStatus.color,
-            user_id: user.id,
+            created_by: user.id,
+            order_index: nextOrderIndex,
+            is_final: false,
           },
         ])
         .select()
@@ -96,7 +112,7 @@ export const useUpdateTaskStatus = () => {
         .from('task_statuses')
         .update(updates)
         .eq('id', id)
-        .eq('user_id', user.id)
+        .eq('created_by', user.id)
         .select()
         .single();
 
@@ -133,7 +149,7 @@ export const useDeleteTaskStatus = () => {
         .from('task_statuses')
         .delete()
         .eq('id', id)
-        .eq('user_id', user.id);
+        .eq('created_by', user.id);
 
       if (error) {
         console.error('Error deleting task status:', error);
