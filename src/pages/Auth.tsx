@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,16 +16,18 @@ const Auth = () => {
   const [name, setName] = useState("");
   const [role, setRole] = useState("client");
   const [isLoading, setIsLoading] = useState(false);
-  const { login, signup, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { login, signup, isAuthenticated, isLoading: authLoading, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Redirect authenticated users
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      console.log('User is authenticated in Auth page, redirecting to dashboard');
-      navigate("/dashboard", { replace: true });
+    if (!authLoading && isAuthenticated && user) {
+      console.log('User is authenticated, redirecting to dashboard:', user);
+      const from = location.state?.from?.pathname || "/dashboard";
+      navigate(from, { replace: true });
     }
-  }, [isAuthenticated, authLoading, navigate]);
+  }, [isAuthenticated, authLoading, navigate, location.state, user]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +48,12 @@ const Auth = () => {
         title: "Login realizado com sucesso",
         description: "Redirecionando...",
       });
+      
+      // Wait a bit for the auth state to update, then navigate
+      setTimeout(() => {
+        navigate("/dashboard", { replace: true });
+      }, 1000);
+      
     } catch (error: any) {
       console.error("Erro no login:", error);
       toast({
@@ -54,7 +61,6 @@ const Auth = () => {
         description: error.message || "Credenciais inválidas",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -164,7 +170,7 @@ const Auth = () => {
                   </div>
                   <Button 
                     className="w-full" 
-                    disabled={isLoading}
+                    disabled={isLoading || authLoading}
                     type="submit"
                   >
                     {isLoading ? (

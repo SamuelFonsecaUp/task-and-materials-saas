@@ -77,7 +77,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const initializeAuth = async () => {
       try {
-        // Check for existing session first
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -93,6 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           if (mounted && userProfile) {
             setUser(userProfile);
             setIsAuthenticated(true);
+            console.log('User authenticated, profile loaded:', userProfile);
           }
         }
 
@@ -112,19 +112,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       async (event, session) => {
         if (!mounted) return;
         
-        console.log('Auth state change:', event);
+        console.log('Auth state change:', event, session ? 'with session' : 'no session');
         
         if (session?.user) {
           const userProfile = await getUserProfile(session.user.id);
           if (mounted && userProfile) {
             setUser(userProfile);
             setIsAuthenticated(true);
+            console.log('User profile loaded after auth change:', userProfile);
           }
         } else {
           if (mounted) {
             setUser(null);
             setIsAuthenticated(false);
+            console.log('User logged out');
           }
+        }
+        
+        if (mounted) {
+          setIsLoading(false);
         }
       }
     );
@@ -143,6 +149,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    */
   const login = async (email: string, password: string) => {
     try {
+      setIsLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -152,9 +159,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
 
-      console.log('Login successful');
+      console.log('Login successful, waiting for auth state change...');
+      // Don't set loading to false here - let the auth state change handler do it
     } catch (error) {
       console.error('Login failed:', error);
+      setIsLoading(false);
       throw error;
     }
   };
