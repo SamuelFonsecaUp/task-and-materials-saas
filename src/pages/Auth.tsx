@@ -20,10 +20,10 @@ const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Redirect authenticated users
+  // Redirect authenticated users immediately
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
-      console.log('User is authenticated, redirecting to dashboard:', user);
+      console.log('User is authenticated, redirecting immediately:', user);
       const from = location.state?.from?.pathname || "/dashboard";
       navigate(from, { replace: true });
     }
@@ -49,10 +49,8 @@ const Auth = () => {
         description: "Redirecionando...",
       });
       
-      // Wait a bit for the auth state to update, then navigate
-      setTimeout(() => {
-        navigate("/dashboard", { replace: true });
-      }, 1000);
+      // Immediate redirect - no timeout
+      navigate("/dashboard", { replace: true });
       
     } catch (error: any) {
       console.error("Erro no login:", error);
@@ -114,14 +112,7 @@ const Auth = () => {
 
   // Don't render anything if user is authenticated (will redirect)
   if (isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Redirecionando...</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (
