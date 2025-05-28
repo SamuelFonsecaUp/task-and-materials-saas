@@ -15,7 +15,7 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ 
   element, 
   allowedRoles, 
-  redirectTo = "/login" 
+  redirectTo = "/auth" 
 }: ProtectedRouteProps) => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
@@ -25,13 +25,13 @@ const ProtectedRoute = ({
     return <LoadingScreen />;
   }
 
-  // Redirect to login if not authenticated
-  if (!isAuthenticated) {
+  // Redirect to auth if not authenticated
+  if (!isAuthenticated || !user) {
     return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 
   // Check if user has permission to access route
-  if (user && !allowedRoles.includes(user.role)) {
+  if (!allowedRoles.includes(user.role)) {
     // Redirect to dashboard by default if user doesn't have permission
     return <Navigate to="/dashboard" replace />;
   }

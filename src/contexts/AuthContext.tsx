@@ -75,12 +75,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
+    const initializeAuth = async () => {
+      try {
+        // Check for existing session first
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting session:', error);
+          if (mounted) {
+            setIsLoading(false);
+          }
+          return;
+        }
+
+        if (session?.user && mounted) {
+          const userProfile = await getUserProfile(session.user.id);
+          if (mounted && userProfile) {
+            setUser(userProfile);
+            setIsAuthenticated(true);
+          }
+        }
+
+        if (mounted) {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error in initializeAuth:', error);
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
         
-        console.log('Auth state change:', event, session?.user?.email);
+        console.log('Auth state change:', event);
         
         if (session?.user) {
           const userProfile = await getUserProfile(session.user.id);
@@ -94,40 +126,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setIsAuthenticated(false);
           }
         }
-        
-        if (mounted) {
-          setIsLoading(false);
-        }
       }
     );
 
-    // Check for existing session
-    const checkSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!mounted) return;
-        
-        if (session?.user) {
-          const userProfile = await getUserProfile(session.user.id);
-          if (mounted && userProfile) {
-            setUser(userProfile);
-            setIsAuthenticated(true);
-          }
-        }
-        
-        if (mounted) {
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error('Error checking session:', error);
-        if (mounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    checkSession();
+    // Initialize auth state
+    initializeAuth();
 
     return () => {
       mounted = false;
@@ -150,7 +153,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       console.log('Login successful');
-      // Auth state change will handle the rest
     } catch (error) {
       console.error('Login failed:', error);
       throw error;

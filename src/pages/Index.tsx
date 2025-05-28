@@ -10,11 +10,14 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Only redirect if we're sure about the auth state (not loading) and user is authenticated
     if (!isLoading && isAuthenticated) {
+      console.log('User is authenticated, redirecting to dashboard');
       navigate("/dashboard", { replace: true });
     }
   }, [isAuthenticated, isLoading, navigate]);
 
+  // Show loading while checking authentication
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -26,8 +29,16 @@ const Index = () => {
     );
   }
 
+  // Don't render anything while redirecting authenticated users
   if (isAuthenticated) {
-    return null; // Will redirect to dashboard
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Redirecionando...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
