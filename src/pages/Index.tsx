@@ -4,17 +4,15 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 const Index = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('Index useEffect - isLoading:', isLoading, 'isAuthenticated:', isAuthenticated);
-    
-    // Only redirect if we're sure about the auth state (not loading) and user is authenticated
+    // Only redirect if not loading and user is authenticated
     if (!isLoading && isAuthenticated) {
-      console.log('User is authenticated, redirecting to dashboard');
       navigate("/dashboard", { replace: true });
     }
   }, [isAuthenticated, isLoading, navigate]);
@@ -24,16 +22,23 @@ const Index = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
           <p className="mt-4 text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
   }
 
-  // Don't render the landing page if user is authenticated
+  // Don't render if authenticated (will redirect)
   if (isAuthenticated) {
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+          <p className="mt-4 text-muted-foreground">Redirecionando...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

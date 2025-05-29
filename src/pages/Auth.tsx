@@ -16,19 +16,18 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState("client");
-  const [isLoading, setIsLoading] = useState(false);
-  const { login, signup, isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login, signup, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Redirect authenticated users immediately
+  // Redirect if already authenticated
   useEffect(() => {
-    if (!authLoading && isAuthenticated && user) {
-      console.log('User is authenticated, redirecting immediately:', user);
+    if (!isLoading && isAuthenticated) {
       const from = location.state?.from?.pathname || "/dashboard";
       navigate(from, { replace: true });
     }
-  }, [isAuthenticated, authLoading, navigate, location.state, user]);
+  }, [isAuthenticated, isLoading, navigate, location.state]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,14 +41,13 @@ const Auth = () => {
       return;
     }
 
-    setIsLoading(true);
+    setIsSubmitting(true);
     try {
       await login(email, password);
       toast({
         title: "Login realizado com sucesso",
         description: "Redirecionando...",
       });
-      
     } catch (error: any) {
       console.error("Erro no login:", error);
       toast({
@@ -57,7 +55,8 @@ const Auth = () => {
         description: error.message || "Credenciais inválidas",
         variant: "destructive",
       });
-      setIsLoading(false);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -73,14 +72,14 @@ const Auth = () => {
       return;
     }
 
-    setIsLoading(true);
+    setIsSubmitting(true);
     try {
       await signup(email, password, name, role as any);
       toast({
         title: "Conta criada com sucesso",
         description: "Você pode fazer login agora",
       });
-      // Clear form after successful signup
+      // Clear form
       setEmail("");
       setPassword("");
       setName("");
@@ -92,23 +91,23 @@ const Auth = () => {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  // Show loading while auth is loading
-  if (authLoading) {
+  // Show loading while checking auth
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
           <p className="mt-4 text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
   }
 
-  // Don't render anything if user is authenticated (will redirect)
+  // Don't render if authenticated
   if (isAuthenticated) {
     return null;
   }
@@ -159,10 +158,10 @@ const Auth = () => {
                   </div>
                   <Button 
                     className="w-full" 
-                    disabled={isLoading || authLoading}
+                    disabled={isSubmitting}
                     type="submit"
                   >
-                    {isLoading ? (
+                    {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Entrando...
@@ -222,10 +221,10 @@ const Auth = () => {
                   </div>
                   <Button 
                     className="w-full" 
-                    disabled={isLoading}
+                    disabled={isSubmitting}
                     type="submit"
                   >
-                    {isLoading ? (
+                    {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Criando conta...
