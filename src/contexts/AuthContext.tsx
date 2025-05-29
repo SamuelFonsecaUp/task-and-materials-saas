@@ -77,6 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const initializeAuth = async () => {
       try {
+        console.log('Initializing auth...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -88,12 +89,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         if (session?.user && mounted) {
+          console.log('Session found, loading user profile...');
           const userProfile = await getUserProfile(session.user.id);
           if (mounted && userProfile) {
             setUser(userProfile);
             setIsAuthenticated(true);
-            console.log('User authenticated, profile loaded:', userProfile);
+            console.log('User authenticated successfully:', userProfile);
+          } else if (mounted) {
+            console.log('User profile not found');
+            setUser(null);
+            setIsAuthenticated(false);
           }
+        } else if (mounted) {
+          console.log('No session found');
+          setUser(null);
+          setIsAuthenticated(false);
         }
 
         if (mounted) {
@@ -102,6 +112,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.error('Error in initializeAuth:', error);
         if (mounted) {
+          setUser(null);
+          setIsAuthenticated(false);
           setIsLoading(false);
         }
       }
@@ -114,23 +126,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         console.log('Auth state change:', event, session ? 'with session' : 'no session');
         
-        if (session?.user) {
+        if (event === 'SIGNED_OUT' || !session) {
+          setUser(null);
+          setIsAuthenticated(false);
+          setIsLoading(false);
+          console.log('User signed out');
+          return;
+        }
+
+        if (event === 'SIGNED_IN' && session?.user) {
+          console.log('User signed in, loading profile...');
           const userProfile = await getUserProfile(session.user.id);
           if (mounted && userProfile) {
             setUser(userProfile);
             setIsAuthenticated(true);
-            console.log('User profile loaded after auth change:', userProfile);
-          }
-        } else {
-          if (mounted) {
+            console.log('User profile loaded after sign in:', userProfile);
+          } else if (mounted) {
+            console.log('Failed to load user profile after sign in');
             setUser(null);
             setIsAuthenticated(false);
-            console.log('User logged out');
           }
-        }
-        
-        if (mounted) {
-          setIsLoading(false);
+          if (mounted) {
+            setIsLoading(false);
+          }
         }
       }
     );
@@ -149,6 +167,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    */
   const login = async (email: string, password: string) => {
     try {
+      console.log('Attempting login...');
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -158,8 +177,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
 
-      console.log('Login successful, waiting for auth state change...');
-      // The auth state change handler will update the user state
+      console.log('Login successful, auth state change will handle the rest');
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
