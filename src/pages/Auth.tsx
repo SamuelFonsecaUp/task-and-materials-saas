@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -48,9 +49,6 @@ const Auth = () => {
         title: "Login realizado com sucesso",
         description: "Redirecionando...",
       });
-      
-      // Immediate redirect - no timeout
-      navigate("/dashboard", { replace: true });
       
     } catch (error: any) {
       console.error("Erro no login:", error);

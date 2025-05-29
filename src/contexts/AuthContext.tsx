@@ -149,7 +149,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    */
   const login = async (email: string, password: string) => {
     try {
-      setIsLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -160,10 +159,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       console.log('Login successful, waiting for auth state change...');
-      // Don't set loading to false here - let the auth state change handler do it
+      // The auth state change handler will update the user state
     } catch (error) {
       console.error('Login failed:', error);
-      setIsLoading(false);
       throw error;
     }
   };
