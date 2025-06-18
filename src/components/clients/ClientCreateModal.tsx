@@ -70,7 +70,21 @@ const ClientCreateModal = ({ isOpen, onClose }: ClientCreateModalProps) => {
 
   const onSubmit = async (data: ClientFormValues) => {
     try {
-      await createClient.mutateAsync(data);
+      // Garantir que os campos obrigatórios estejam presentes
+      const clientData = {
+        ...data,
+        name: data.name || "",
+        email: data.email || "",
+        phone: data.phone || "",
+        address: data.address || "",
+        website: data.website || "",
+        industry: data.industry || "",
+        contact_person: data.contact_person || "",
+        logo_url: data.logo_url || "",
+        looker_studio_embed: data.looker_studio_embed || "",
+      };
+      
+      await createClient.mutateAsync(clientData);
       onClose();
       form.reset();
     } catch (error) {

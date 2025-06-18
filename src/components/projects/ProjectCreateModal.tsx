@@ -28,7 +28,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCreateProject } from "@/hooks/useProjects";
-import { useClients } from "@/hooks/useClients";
 
 const projectFormSchema = z.object({
   name: z.string().min(1, { message: "Nome é obrigatório" }),
@@ -50,7 +49,6 @@ interface ProjectCreateModalProps {
 
 const ProjectCreateModal = ({ isOpen, onClose }: ProjectCreateModalProps) => {
   const createProject = useCreateProject();
-  const { data: clients = [] } = useClients();
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectFormSchema),
@@ -66,21 +64,20 @@ const ProjectCreateModal = ({ isOpen, onClose }: ProjectCreateModalProps) => {
     },
   });
 
-  const selectedClient = clients.find(client => client.name === form.watch("client_name"));
-
-  React.useEffect(() => {
-    if (selectedClient?.logo_url) {
-      form.setValue("client_logo", selectedClient.logo_url);
-    }
-  }, [selectedClient, form]);
-
   const onSubmit = async (data: ProjectFormValues) => {
     try {
+      // Preparar dados garantindo campos obrigatórios
       const projectData = {
-        ...data,
+        name: data.name || "",
+        description: data.description || "",
+        client_name: data.client_name || "",
+        client_logo: data.client_logo || "",
         start_date: data.start_date || null,
         due_date: data.due_date || null,
+        status: data.status,
+        progress: data.progress || 0,
       };
+
       await createProject.mutateAsync(projectData);
       onClose();
       form.reset();
@@ -119,20 +116,9 @@ const ProjectCreateModal = ({ isOpen, onClose }: ProjectCreateModalProps) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Cliente *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione um cliente" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {clients.map((client) => (
-                          <SelectItem key={client.id} value={client.name}>
-                            {client.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input placeholder="Nome do cliente" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -200,9 +186,24 @@ const ProjectCreateModal = ({ isOpen, onClose }: ProjectCreateModalProps) => {
                         type="number" 
                         min="0" 
                         max="100" 
-                        {...field} 
+                        placeholder="0"
+                        {...field}
                         onChange={(e) => field.onChange(Number(e.target.value))}
                       />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="client_logo"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Logo do Cliente (URL)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="URL da logo do cliente" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -218,7 +219,7 @@ const ProjectCreateModal = ({ isOpen, onClose }: ProjectCreateModalProps) => {
                   <FormLabel>Descrição</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Descrição do projeto..."
+                      placeholder="Descreva o projeto..."
                       className="min-h-24"
                       {...field}
                     />
