@@ -14,6 +14,26 @@ import { useTasks } from "@/hooks/useTasks";
 import { useProjects } from "@/hooks/useProjects";
 import { Task, groupTasksByDay } from "@/services/taskService";
 
+// Transform Task from service to TaskTable format
+const transformTaskForTable = (task: Task) => ({
+  id: parseInt(task.id) || 0,
+  companyName: task.projects?.client_name || "Sem Cliente",
+  companyLogo: task.projects?.client_logo || "https://via.placeholder.com/32",
+  title: task.title,
+  status: task.status,
+  dueDate: new Date(task.due_date).toLocaleDateString('pt-BR'),
+  priority: task.priority as 'low' | 'medium' | 'high' | 'urgent',
+  assignedTo: task.assigned_user ? {
+    name: task.assigned_user.name,
+    avatar: task.assigned_user.avatar_url || "https://via.placeholder.com/32"
+  } : undefined,
+  description: task.description || undefined,
+  project: task.projects ? {
+    id: parseInt(task.projects.id) || 0,
+    name: task.projects.name
+  } : undefined
+});
+
 const Tasks = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -54,15 +74,27 @@ const Tasks = () => {
   // Agrupar tarefas por dia
   const groupedTasksByDay = groupTasksByDay(filteredTasks);
 
+  // Transform tasks for table view
+  const transformedTasks = filteredTasks.map(transformTaskForTable);
+
   // Paginação para view de tabela
   const indexOfLastTask = currentPage * tasksPerPage;
   const indexOfFirstTask = indexOfLastTask - tasksPerPage;
-  const currentTasks = filteredTasks.slice(indexOfFirstTask, indexOfLastTask);
+  const currentTasks = transformedTasks.slice(indexOfFirstTask, indexOfLastTask);
   const totalPages = Math.max(1, Math.ceil(filteredTasks.length / tasksPerPage));
 
-  const handleTaskClick = (task: Task) => {
-    setSelectedTask(task);
-    setIsModalOpen(true);
+  const handleTaskClick = (task: Task | ReturnType<typeof transformTaskForTable>) => {
+    // If it's from table view, find the original task
+    if ('companyName' in task) {
+      const originalTask = tasks.find(t => t.id === task.id.toString());
+      if (originalTask) {
+        setSelectedTask(originalTask);
+        setIsModalOpen(true);
+      }
+    } else {
+      setSelectedTask(task);
+      setIsModalOpen(true);
+    }
   };
 
   const handlePageChange = (page: number) => {
@@ -141,7 +173,7 @@ const Tasks = () => {
           />
         ) : viewMode === "board" ? (
           <TaskBoard
-            tasks={filteredTasks}
+            tasks={transformedTasks}
             onTaskClick={handleTaskClick}
           />
         ) : (

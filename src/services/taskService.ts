@@ -2,7 +2,20 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 
-export type Task = Tables<"tasks">;
+export type Task = Tables<"tasks"> & {
+  projects?: {
+    id: string;
+    name: string;
+    client_name: string;
+    client_logo: string | null;
+  } | null;
+  assigned_user?: {
+    id: string;
+    name: string;
+    avatar_url: string | null;
+  } | null;
+};
+
 export type TaskInsert = TablesInsert<"tasks">;
 export type TaskUpdate = TablesUpdate<"tasks">;
 

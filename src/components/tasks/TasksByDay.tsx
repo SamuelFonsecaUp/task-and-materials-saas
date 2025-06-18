@@ -1,7 +1,7 @@
 
 import { ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { Task } from "@/services/taskService";
@@ -119,6 +119,13 @@ const TasksByDay = ({ groupedTasks, onTaskClick, onAddTask }: TasksByDayProps) =
                            task.status === 'in-progress' ? 'Em Andamento' : 'Concluída'}
                         </Badge>
                       </div>
+                      {task.projects && (
+                        <div className="mt-2">
+                          <span className="text-xs text-muted-foreground">
+                            Projeto: {task.projects.name}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     {task.assigned_user?.avatar_url && (
                       <img 
