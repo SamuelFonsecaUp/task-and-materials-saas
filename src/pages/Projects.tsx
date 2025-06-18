@@ -32,7 +32,9 @@ import { Calendar, ClipboardList, Edit, Plus, Settings, Trash } from "lucide-rea
 import ProjectDetailModal from "@/components/projects/ProjectDetailModal";
 import ProjectCreateModal from "@/components/projects/ProjectCreateModal";
 import { useProjects } from "@/hooks/useProjects";
-import type { Project } from "@/services/projectService";
+import type { Tables } from "@/integrations/supabase/types";
+
+type Project = Tables<"projects">;
 
 const Projects = () => {
   const [searchTerm, setSearchTerm] = useState("");

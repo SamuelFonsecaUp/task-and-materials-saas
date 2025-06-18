@@ -5,6 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 import TaskTable from "@/components/tasks/TaskTable";
 import TaskBoard from "@/components/tasks/TaskBoard";
 import TaskDetailModal from "@/components/tasks/TaskDetailModal";
+import TaskCreateModal from "@/components/tasks/TaskCreateModal";
 import TasksFilter from "@/components/tasks/TasksFilter";
 import TasksPagination from "@/components/tasks/TasksPagination";
 import TasksEmptyState from "@/components/tasks/TasksEmptyState";
@@ -42,6 +43,8 @@ const Tasks = () => {
   const [isMyTasksMode, setIsMyTasksMode] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [createTaskDay, setCreateTaskDay] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const [tasksPerPage] = useState(10);
   const [sortField, setSortField] = useState<string>("due_date");
@@ -112,22 +115,22 @@ const Tasks = () => {
   };
 
   const handleNewTask = () => {
-    toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "A criação de novas tarefas estará disponível em breve.",
-    });
+    setCreateTaskDay("");
+    setIsCreateModalOpen(true);
   };
 
   const handleAddTaskByDay = (day: string) => {
-    toast({
-      title: "Adicionar tarefa",
-      description: `Funcionalidade para adicionar tarefa em ${day} será implementada em breve.`,
-    });
+    setCreateTaskDay(day);
+    setIsCreateModalOpen(true);
   };
 
   // Criar lista de usuários e projetos para os filtros
   const users = Array.from(new Set(tasks.map(task => task.assigned_user).filter(Boolean)))
-    .map(user => ({ id: user!.id, name: user!.name || 'Usuário', avatar: user!.avatar_url }));
+    .map(user => ({ 
+      id: user!.id, 
+      name: user!.name || 'Usuário', 
+      avatar: user!.avatar_url || "https://via.placeholder.com/32"
+    }));
 
   const projectsForFilter = projects.map(project => ({ 
     id: project.id, 
@@ -204,6 +207,12 @@ const Tasks = () => {
           onClose={() => setIsModalOpen(false)}
         />
       )}
+
+      <TaskCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        defaultDay={createTaskDay}
+      />
     </div>
   );
 };

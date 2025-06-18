@@ -30,7 +30,20 @@ export const useCreateTask = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (task: Omit<TaskInsert, "created_by">) => taskService.create(task),
+    mutationFn: (task: Omit<TaskInsert, "created_by">) => {
+      // Validações básicas
+      if (!task.title?.trim()) {
+        throw new Error("Título é obrigatório");
+      }
+      if (!task.project_id?.trim()) {
+        throw new Error("Projeto é obrigatório");
+      }
+      if (!task.due_date) {
+        throw new Error("Data de vencimento é obrigatória");
+      }
+      
+      return taskService.create(task);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       toast.success("Tarefa criada com sucesso!");
