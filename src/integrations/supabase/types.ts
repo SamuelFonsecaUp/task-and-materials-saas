@@ -66,6 +66,127 @@ export type Database = {
           },
         ]
       }
+      chat_messages: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          project_id: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          project_id: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          project_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          address: string | null
+          contact_person: string | null
+          created_at: string | null
+          email: string
+          id: string
+          industry: string | null
+          logo_url: string | null
+          looker_studio_embed: string | null
+          name: string
+          phone: string | null
+          status: string
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          industry?: string | null
+          logo_url?: string | null
+          looker_studio_embed?: string | null
+          name: string
+          phone?: string | null
+          status?: string
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          industry?: string | null
+          logo_url?: string | null
+          looker_studio_embed?: string | null
+          name?: string
+          phone?: string | null
+          status?: string
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      file_uploads: {
+        Row: {
+          created_at: string | null
+          file_path: string
+          file_size: number | null
+          file_type: string
+          filename: string
+          id: string
+          material_id: string | null
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string | null
+          file_path: string
+          file_size?: number | null
+          file_type: string
+          filename: string
+          id?: string
+          material_id?: string | null
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string | null
+          file_path?: string
+          file_size?: number | null
+          file_type?: string
+          filename?: string
+          id?: string
+          material_id?: string | null
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_uploads_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitations: {
         Row: {
           accepted: boolean | null
@@ -109,6 +230,149 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      materials: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          feedback: string | null
+          file_type: string
+          file_url: string | null
+          id: string
+          name: string
+          project_id: string
+          status: string
+          thumbnail_url: string | null
+          updated_at: string | null
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          feedback?: string | null
+          file_type: string
+          file_url?: string | null
+          id?: string
+          name: string
+          project_id: string
+          status?: string
+          thumbnail_url?: string | null
+          updated_at?: string | null
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          feedback?: string | null
+          file_type?: string
+          file_url?: string | null
+          id?: string
+          name?: string
+          project_id?: string
+          status?: string
+          thumbnail_url?: string | null
+          updated_at?: string | null
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materials_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          client_logo: string | null
+          client_name: string
+          created_at: string | null
+          created_by: string
+          description: string | null
+          due_date: string | null
+          id: string
+          name: string
+          progress: number | null
+          start_date: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          client_logo?: string | null
+          client_name: string
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          name: string
+          progress?: number | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          client_logo?: string | null
+          client_name?: string
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          name?: string
+          progress?: number | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      prospects: {
+        Row: {
+          assigned_to: string | null
+          company: string | null
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          position: string | null
+          source: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          company?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          position?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          company?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          position?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       "Tabela 01": {
         Row: {
@@ -169,50 +433,51 @@ export type Database = {
       tasks: {
         Row: {
           assigned_to: string | null
-          company_logo: string
-          company_name: string
           created_at: string | null
           created_by: string
           description: string | null
           due_date: string
           id: string
           priority: string
-          project_id: string | null
+          project_id: string
           status: string
           title: string
           updated_at: string | null
         }
         Insert: {
           assigned_to?: string | null
-          company_logo: string
-          company_name: string
           created_at?: string | null
           created_by: string
           description?: string | null
           due_date: string
           id?: string
           priority: string
-          project_id?: string | null
+          project_id: string
           status: string
           title: string
           updated_at?: string | null
         }
         Update: {
           assigned_to?: string | null
-          company_logo?: string
-          company_name?: string
           created_at?: string | null
           created_by?: string
           description?: string | null
           due_date?: string
           id?: string
           priority?: string
-          project_id?: string | null
+          project_id?: string
           status?: string
           title?: string
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_tasks_project"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tasks_assigned_to_fkey"
             columns: ["assigned_to"]
