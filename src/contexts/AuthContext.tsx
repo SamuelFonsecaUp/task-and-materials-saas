@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Auth actions
   const login = async (email: string, password: string): Promise<void> => {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signup = async (email: string, password: string, name: string, role: UserRole = "client"): Promise<void> => {
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -86,41 +86,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Auth state management
+  // Simplified auth state management
   useEffect(() => {
-    let mounted = true;
+    let isMounted = true;
 
-    // Get initial session
-    const getInitialSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Error getting session:', error);
-          return;
-        }
-
-        if (mounted) {
-          setSession(session);
-          if (session?.user) {
-            setUser(createAuthUser(session.user));
-          }
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error('Error in getInitialSession:', error);
-        if (mounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    // Set up auth state listener
+    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
+      (event, session) => {
+        console.log('Auth state change:', event, !!session);
         
-        console.log('Auth state change:', event);
+        if (!isMounted) return;
         
         setSession(session);
         
@@ -130,14 +105,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser(null);
         }
         
+        // Only set loading to false after we've processed the session
         setIsLoading(false);
       }
     );
 
-    getInitialSession();
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
+      
+      setSession(session);
+      if (session?.user) {
+        setUser(createAuthUser(session.user));
+      }
+      setIsLoading(false);
+    });
 
     return () => {
-      mounted = false;
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, []);

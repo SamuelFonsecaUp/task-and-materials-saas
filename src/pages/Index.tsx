@@ -11,31 +11,31 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Only redirect if not loading and user is authenticated
+    // Only redirect after loading is complete and user is authenticated
     if (!isLoading && isAuthenticated) {
       navigate("/dashboard", { replace: true });
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  // Show loading while checking authentication
+  // Show loading only while checking authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-          <p className="mt-4 text-muted-foreground">Carregando...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+          <p className="mt-2 text-sm text-muted-foreground">Verificando autenticação...</p>
         </div>
       </div>
     );
   }
 
-  // Don't render if authenticated (will redirect)
+  // Don't render content if authenticated (will redirect)
   if (isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-          <p className="mt-4 text-muted-foreground">Redirecionando...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+          <p className="mt-2 text-sm text-muted-foreground">Redirecionando...</p>
         </div>
       </div>
     );

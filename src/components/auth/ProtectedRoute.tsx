@@ -9,9 +9,6 @@ interface ProtectedRouteProps {
   redirectTo?: string;
 }
 
-/**
- * Component to protect routes based on user role
- */
 const ProtectedRoute = ({ 
   element, 
   allowedRoles, 
@@ -22,7 +19,7 @@ const ProtectedRoute = ({
 
   // Show loading screen while checking authentication
   if (isLoading) {
-    return <LoadingScreen />;
+    return <LoadingScreen message="Verificando permissões..." />;
   }
 
   // Redirect to auth if not authenticated
@@ -32,11 +29,9 @@ const ProtectedRoute = ({
 
   // Check if user has permission to access route
   if (!allowedRoles.includes(user.role)) {
-    // Redirect to dashboard by default if user doesn't have permission
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Allow access if passes all checks
   return <>{element}</>;
 };
 

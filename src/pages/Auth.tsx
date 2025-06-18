@@ -46,7 +46,7 @@ const Auth = () => {
       await login(email, password);
       toast({
         title: "Login realizado com sucesso",
-        description: "Redirecionando...",
+        description: "Bem-vindo de volta!",
       });
     } catch (error: any) {
       console.error("Erro no login:", error);
@@ -98,10 +98,10 @@ const Auth = () => {
   // Show loading while checking auth
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-          <p className="mt-4 text-muted-foreground">Carregando...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+          <p className="mt-2 text-sm text-muted-foreground">Verificando autenticação...</p>
         </div>
       </div>
     );
@@ -143,6 +143,7 @@ const Auth = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div className="space-y-2">
@@ -154,6 +155,7 @@ const Auth = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                   <Button 
@@ -182,6 +184,7 @@ const Auth = () => {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div className="space-y-2">
@@ -193,6 +196,7 @@ const Auth = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div className="space-y-2">
@@ -204,11 +208,12 @@ const Auth = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="role">Tipo de usuário</Label>
-                    <Select value={role} onValueChange={setRole}>
+                    <Select value={role} onValueChange={setRole} disabled={isSubmitting}>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o tipo de usuário" />
                       </SelectTrigger>
