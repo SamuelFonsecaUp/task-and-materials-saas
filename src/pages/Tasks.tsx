@@ -13,10 +13,11 @@ import TasksHeader from "@/components/tasks/TasksHeader";
 import TasksByDay from "@/components/tasks/TasksByDay";
 import { useTasks } from "@/hooks/useTasks";
 import { useProjects } from "@/hooks/useProjects";
-import { Task, groupTasksByDay } from "@/services/taskService";
+import { Task as ServiceTask, groupTasksByDay } from "@/services/taskService";
+import { Task as ComponentTask } from "@/components/tasks/types";
 
 // Transform Task from service to TaskTable format
-const transformTaskForTable = (task: Task) => ({
+const transformTaskForTable = (task: ServiceTask): ComponentTask => ({
   id: parseInt(task.id) || 0,
   companyName: task.projects?.client_name || "Sem Cliente",
   companyLogo: task.projects?.client_logo || "https://via.placeholder.com/32",
@@ -30,7 +31,7 @@ const transformTaskForTable = (task: Task) => ({
   } : undefined,
   description: task.description || undefined,
   project: task.projects ? {
-    id: parseInt(task.projects.id) || 0,
+    id: task.projects.id,
     name: task.projects.name
   } : undefined
 });
@@ -41,7 +42,7 @@ const Tasks = () => {
   const [filterProject, setFilterProject] = useState("all");
   const [filterResponsible, setFilterResponsible] = useState("all");
   const [isMyTasksMode, setIsMyTasksMode] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedTask, setSelectedTask] = useState<ServiceTask | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [createTaskDay, setCreateTaskDay] = useState<string>("");
@@ -86,7 +87,7 @@ const Tasks = () => {
   const currentTasks = transformedTasks.slice(indexOfFirstTask, indexOfLastTask);
   const totalPages = Math.max(1, Math.ceil(filteredTasks.length / tasksPerPage));
 
-  const handleTaskClick = (task: Task | ReturnType<typeof transformTaskForTable>) => {
+  const handleTaskClick = (task: ServiceTask | ComponentTask) => {
     // If it's from table view, find the original task
     if ('companyName' in task) {
       const originalTask = tasks.find(t => t.id === task.id.toString());
@@ -170,19 +171,19 @@ const Tasks = () => {
         {viewMode === "table" ? (
           <TaskTable 
             tasks={currentTasks} 
-            onTaskClick={handleTaskClick}
+            onTaskClick={(task) => handleTaskClick(task)}
             isLoading={isLoading}
             onSort={handleSort}
           />
         ) : viewMode === "board" ? (
           <TaskBoard
             tasks={transformedTasks}
-            onTaskClick={handleTaskClick}
+            onTaskClick={(task) => handleTaskClick(task)}
           />
         ) : (
           <TasksByDay
             groupedTasks={groupedTasksByDay}
-            onTaskClick={handleTaskClick}
+            onTaskClick={(task) => handleTaskClick(task)}
             onAddTask={handleAddTaskByDay}
           />
         )}

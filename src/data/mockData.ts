@@ -2,19 +2,19 @@
 import { Task, User, Project } from "@/components/tasks/types";
 
 export const users: User[] = [
-  { id: 1, name: "Ana Silva", avatar: "https://i.pravatar.cc/150?img=1" },
-  { id: 2, name: "João Costa", avatar: "https://i.pravatar.cc/150?img=2" },
-  { id: 3, name: "Maria Souza", avatar: "https://i.pravatar.cc/150?img=3" },
-  { id: 4, name: "Carlos Pereira", avatar: "https://i.pravatar.cc/150?img=4" },
-  { id: 5, name: "Paula Lima", avatar: "https://i.pravatar.cc/150?img=5" }
+  { id: "1", name: "Ana Silva", avatar: "https://i.pravatar.cc/150?img=1" },
+  { id: "2", name: "João Costa", avatar: "https://i.pravatar.cc/150?img=2" },
+  { id: "3", name: "Maria Souza", avatar: "https://i.pravatar.cc/150?img=3" },
+  { id: "4", name: "Carlos Pereira", avatar: "https://i.pravatar.cc/150?img=4" },
+  { id: "5", name: "Paula Lima", avatar: "https://i.pravatar.cc/150?img=5" }
 ];
 
 export const projects: Project[] = [
-  { id: 1, name: "Campanha de Lançamento" },
-  { id: 2, name: "Redesign de Site" },
-  { id: 3, name: "Campanha de Mídia Social" },
-  { id: 4, name: "Redesign de Marca" },
-  { id: 5, name: "Marketing de Conteúdo" }
+  { id: "1", name: "Campanha de Lançamento" },
+  { id: "2", name: "Redesign de Site" },
+  { id: "3", name: "Campanha de Mídia Social" },
+  { id: "4", name: "Redesign de Marca" },
+  { id: "5", name: "Marketing de Conteúdo" }
 ];
 
 export const tasks: Task[] = [

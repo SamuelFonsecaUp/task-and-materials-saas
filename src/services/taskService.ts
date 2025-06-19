@@ -25,13 +25,13 @@ export const taskService = {
       .from("tasks")
       .select(`
         *,
-        projects:project_id (
+        projects!fk_tasks_project (
           id,
           name,
           client_name,
           client_logo
         ),
-        assigned_user:assigned_to (
+        assigned_user:users!tasks_assigned_to_fkey (
           id,
           name,
           avatar_url
@@ -48,13 +48,13 @@ export const taskService = {
       .from("tasks")
       .select(`
         *,
-        projects:project_id (
+        projects!fk_tasks_project (
           id,
           name,
           client_name,
           client_logo
         ),
-        assigned_user:assigned_to (
+        assigned_user:users!tasks_assigned_to_fkey (
           id,
           name,
           avatar_url
@@ -72,13 +72,13 @@ export const taskService = {
       .from("tasks")
       .select(`
         *,
-        projects:project_id (
+        projects!fk_tasks_project (
           id,
           name,
           client_name,
           client_logo
         ),
-        assigned_user:assigned_to (
+        assigned_user:users!tasks_assigned_to_fkey (
           id,
           name,
           avatar_url
@@ -100,13 +100,13 @@ export const taskService = {
       .insert({ ...task, created_by: user.id })
       .select(`
         *,
-        projects:project_id (
+        projects!fk_tasks_project (
           id,
           name,
           client_name,
           client_logo
         ),
-        assigned_user:assigned_to (
+        assigned_user:users!tasks_assigned_to_fkey (
           id,
           name,
           avatar_url
@@ -125,13 +125,13 @@ export const taskService = {
       .eq("id", id)
       .select(`
         *,
-        projects:project_id (
+        projects!fk_tasks_project (
           id,
           name,
           client_name,
           client_logo
         ),
-        assigned_user:assigned_to (
+        assigned_user:users!tasks_assigned_to_fkey (
           id,
           name,
           avatar_url
