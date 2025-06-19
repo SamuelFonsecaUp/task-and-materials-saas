@@ -40,7 +40,7 @@ export const taskService = {
       .order("due_date", { ascending: true });
     
     if (error) throw error;
-    return data || [];
+    return (data || []) as Task[];
   },
 
   async getByProject(projectId: string): Promise<Task[]> {
@@ -64,7 +64,7 @@ export const taskService = {
       .order("due_date", { ascending: true });
     
     if (error) throw error;
-    return data || [];
+    return (data || []) as Task[];
   },
 
   async getById(id: string): Promise<Task | null> {
@@ -88,7 +88,7 @@ export const taskService = {
       .single();
     
     if (error) throw error;
-    return data;
+    return data as Task;
   },
 
   async create(task: Omit<TaskInsert, "created_by">): Promise<Task> {
@@ -115,7 +115,7 @@ export const taskService = {
       .single();
     
     if (error) throw error;
-    return data;
+    return data as Task;
   },
 
   async update(id: string, updates: TaskUpdate): Promise<Task> {
@@ -140,7 +140,7 @@ export const taskService = {
       .single();
     
     if (error) throw error;
-    return data;
+    return data as Task;
   },
 
   async delete(id: string): Promise<void> {

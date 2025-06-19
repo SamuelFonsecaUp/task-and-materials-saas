@@ -25,12 +25,12 @@ export interface Task {
 }
 
 export interface User {
-  id: number;
+  id: string;
   name: string;
   avatar: string;
 }
 
 export interface Project {
-  id: number;
+  id: string;
   name: string;
 }
