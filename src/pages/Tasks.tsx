@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
@@ -14,7 +13,7 @@ import TasksByDay from "@/components/tasks/TasksByDay";
 import { useTasks } from "@/hooks/useTasks";
 import { useProjects } from "@/hooks/useProjects";
 import { Task as ServiceTask, groupTasksByDay } from "@/services/taskService";
-import { Task as ComponentTask } from "@/components/tasks/types";
+import { Task as ComponentTask, User, Project } from "@/components/tasks/types";
 
 // Transform Task from service to TaskTable format
 const transformTaskForTable = (task: ServiceTask): ComponentTask => ({
@@ -126,14 +125,14 @@ const Tasks = () => {
   };
 
   // Criar lista de usuários e projetos para os filtros
-  const users = Array.from(new Set(tasks.map(task => task.assigned_user).filter(Boolean)))
+  const users: User[] = Array.from(new Set(tasks.map(task => task.assigned_user).filter(Boolean)))
     .map(user => ({ 
       id: user!.id, 
       name: user!.name || 'Usuário', 
       avatar: user!.avatar_url || "https://via.placeholder.com/32"
     }));
 
-  const projectsForFilter = projects.map(project => ({ 
+  const projectsForFilter: Project[] = projects.map(project => ({ 
     id: project.id, 
     name: project.name 
   }));
